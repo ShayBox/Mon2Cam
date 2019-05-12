@@ -17,11 +17,22 @@ Instructions:
 - Switch discord webcam to "Mon2Cam" (Must be running)
 
 ```
+./Mon2Cam.sh - Monitor to Camera
+
+./Mon2Cam.sh [option] [value]
+
+options:
+-h, --help                show help
+-f, --framerate=FPS       set framerate
+-d, --device-number=NUM   set device number
+-m, --monitor-number=NUM  set monitor number
+```
+
+```
 Monitors: 2
  0: +*DP-0 1920/531x1080/299+0+0  DP-0
  1: +HDMI-0 1366/410x768/230+1920+0  HDMI-0
 Which monitor: 0
-What framerate: 60
 CTRL + C to stop
 ```
 
