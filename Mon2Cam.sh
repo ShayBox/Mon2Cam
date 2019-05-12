@@ -66,7 +66,7 @@ fi
 DEVICE="/dev/video$DEVICE_NUMBER"
 if [ -f $DEVICE ]
 then
-    echo "Error: $DEVICE exists, change in file"
+    echo "Error: $DEVICE exists, try adding '-d 100'"
     exit 1
 fi
 # End Option checking
