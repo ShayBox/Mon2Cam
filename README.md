@@ -26,3 +26,5 @@ CTRL + C to stop
 ```
 
 ![Screenshot](Screenshot.png)
+
+This is a continuation of [TaPO4eg3D/discord-monitors-to-vc](https://github.com/TaPO4eg3D/discord-monitors-to-vc) that uses pure bash instead of a mix of bash and python to remove the python dependency, it also adds dependency checking

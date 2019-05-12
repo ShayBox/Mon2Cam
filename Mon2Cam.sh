@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# CHANGE IF /dev/video10 IS UNAVAILABLE
+NUMBER=10
+
 XRANDR=$(command -v xrandr)
 if ! [ -x $XRANDR ]
 then
@@ -14,18 +17,10 @@ then
   exit 1
 fi
 
-MONITOR_COUNT=$($XRANDR --listactivemonitors | wc -l)
-if (( $MONITOR_COUNT <= 2 ))
-then
-  echo "Error: you only have one monitor."
-  exit 1
-fi
-
-NUMBER=10
 DEVICE="/dev/video$NUMBER"
 if [ -f $DEVICE ]
 then
-  echo "Error: $DEVICE exists"
+  echo "Error: $DEVICE exists, change in file"
   exit 1
 fi
 
