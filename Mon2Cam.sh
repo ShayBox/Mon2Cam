@@ -1,5 +1,8 @@
 #!/bin/bash
 
+VFLIP=""
+HFLIP=""
+
 # Options
 while [ ! $# -eq 0 ]
 do
@@ -14,6 +17,8 @@ do
             echo "-f, --framerate=FPS       set framerate"
             echo "-d, --device-number=NUM   set device number"
             echo "-m, --monitor-number=NUM  set monitor number"
+            echo "-vf, --vertical-flip      vertically flip the monitor capture"
+            echo "-hf, --horizontal-flip    horizontally flip the monitor capture"
             exit
         ;;
         -f | --framerate)
@@ -24,6 +29,12 @@ do
         ;;
         -m | --monitor-number)
 			MONITOR_NUMBER=$2
+        ;;
+        -vf | --vertical-flip)
+      VFLIP="-vf vflip"
+        ;;
+        -hf | --horizontal-flip)
+      HFLIP="-vf hflip"
         ;;
     esac
     shift
@@ -83,6 +94,6 @@ sudo modprobe -r v4l2loopback
 sudo modprobe v4l2loopback video_nr=$DEVICE_NUMBER 'card_label=Mon2Cam'
 
 echo "CTRL + C to stop"
-$FFMPEG -f x11grab -r $FPS -s "$MONITOR_WIDTH"x"$MONITOR_HEIGHT" -i "$DISPLAY"+"$MONITOR_X","$MONITOR_Y" -vcodec rawvideo -pix_fmt yuv420p -threads 0 -f v4l2 $DEVICE &> /dev/null
+$FFMPEG -f x11grab -r $FPS -s "$MONITOR_WIDTH"x"$MONITOR_HEIGHT" -i "$DISPLAY"+"$MONITOR_X","$MONITOR_Y" -vcodec rawvideo $VFLIP $HFLIP -pix_fmt yuv420p -threads 0 -f v4l2 $DEVICE &> /dev/null
 
 sudo modprobe -r v4l2loopback
