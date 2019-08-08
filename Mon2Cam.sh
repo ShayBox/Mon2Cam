@@ -1,7 +1,8 @@
 #!/bin/bash
 
-VFLIP=""
-HFLIP=""
+# Default Variables
+DEVICE_NUMBER=10
+FPS=60
 
 # Options
 while [ ! $# -eq 0 ]
@@ -31,10 +32,10 @@ do
 			MONITOR_NUMBER=$2
         ;;
         -vf | --vertical-flip)
-      VFLIP="-vf vflip"
+            VFLIP="-vf vflip"
         ;;
         -hf | --horizontal-flip)
-      HFLIP="-vf hflip"
+            HFLIP="-vf hflip"
         ;;
     esac
     shift
@@ -58,16 +59,6 @@ fi
 # End Dependency checking
 
 # Option checking
-if [ -z $DEVICE_NUMBER ]
-then
-    export DEVICE_NUMBER=10
-fi
-
-if [ -z $FPS ]
-then
-    export FPS=60
-fi
-
 if [ -z $MONITOR_NUMBER ]
 then
     $XRANDR --listactivemonitors
@@ -90,10 +81,13 @@ MONITOR_X=`echo $MONITOR_INFO | cut -f2 -d'+'`
 MONITOR_Y=`echo $MONITOR_INFO | cut -f3 -d'+'`
 # End Monitor information
 
+# Start Mon2Cam
 sudo modprobe -r v4l2loopback
 sudo modprobe v4l2loopback video_nr=$DEVICE_NUMBER 'card_label=Mon2Cam'
 
 echo "CTRL + C to stop"
+echo "Your screen will look mirrored for you, not others"
 $FFMPEG -f x11grab -r $FPS -s "$MONITOR_WIDTH"x"$MONITOR_HEIGHT" -i "$DISPLAY"+"$MONITOR_X","$MONITOR_Y" -vcodec rawvideo $VFLIP $HFLIP -pix_fmt yuv420p -threads 0 -f v4l2 $DEVICE &> /dev/null
 
 sudo modprobe -r v4l2loopback
+# End Mon2Cam
