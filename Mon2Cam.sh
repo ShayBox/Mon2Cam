@@ -3,42 +3,43 @@
 # Default Variables
 DEVICE_NUMBER=10
 FPS=60
+# End Default Variables
 
 # Options
 while [ ! $# -eq 0 ]
 do
-    case "$1" in
-        -h | --help)
-            echo "$0 - Monitor to Camera"
-            echo ""
-            echo "$0 [option] [value]"
-            echo ""
-            echo "options:"
-            echo "-h, --help                show help"
-            echo "-f, --framerate=FPS       set framerate"
-            echo "-d, --device-number=NUM   set device number"
-            echo "-m, --monitor-number=NUM  set monitor number"
-            echo "-vf, --vertical-flip      vertically flip the monitor capture"
-            echo "-hf, --horizontal-flip    horizontally flip the monitor capture"
-            exit
-        ;;
-        -f | --framerate)
+	case "$1" in
+		-h | --help)
+			echo "$0 - Monitor to Camera"
+			echo ""
+			echo "$0 [option] [value]"
+			echo ""
+			echo "options:"
+			echo "-h, --help                show help"
+			echo "-f, --framerate=FPS       set framerate"
+			echo "-d, --device-number=NUM   set device number"
+			echo "-m, --monitor-number=NUM  set monitor number"
+			echo "-vf, --vertical-flip      vertically flip the monitor capture"
+			echo "-hf, --horizontal-flip    horizontally flip the monitor capture"
+			exit
+		;;
+		-f | --framerate)
 			FPS=$2
-        ;;
-        -d | --device-number)
+		;;
+		-d | --device-number)
 			DEVICE_NUMBER=$2
-        ;;
-        -m | --monitor-number)
+		;;
+		-m | --monitor-number)
 			MONITOR_NUMBER=$2
-        ;;
-        -vf | --vertical-flip)
-            VFLIP="-vf vflip"
-        ;;
-        -hf | --horizontal-flip)
-            HFLIP="-vf hflip"
-        ;;
-    esac
-    shift
+		;;
+		-vf | --vertical-flip)
+			VFLIP="-vf vflip"
+		;;
+		-hf | --horizontal-flip)
+			HFLIP="-vf hflip"
+		;;
+	esac
+	shift
 done
 # End Options
 
@@ -46,30 +47,30 @@ done
 XRANDR=$(command -v xrandr)
 if ! [ -x $XRANDR ]
 then
-    echo "Error: xrandr is not installed."
-    exit 1
+	echo "Error: xrandr is not installed."
+	exit 1
 fi
 
 FFMPEG=$(command -v ffmpeg)
 if ! [ -x $FFMPEG ]
 then
-    echo "Error: ffmpeg is not installed."
-    exit 1
+	echo "Error: ffmpeg is not installed."
+	exit 1
 fi
 # End Dependency checking
 
 # Option checking
 if [ -z $MONITOR_NUMBER ]
 then
-    $XRANDR --listactivemonitors
-    read -p "Which monitor: " MONITOR_NUMBER
+	$XRANDR --listactivemonitors
+	read -p "Which monitor: " MONITOR_NUMBER
 fi
 
 DEVICE="/dev/video$DEVICE_NUMBER"
 if [ -f $DEVICE ]
 then
-    echo "Error: $DEVICE exists, try adding '-d 100'"
-    exit 1
+	echo "Error: $DEVICE exists, try adding '-d 100'"
+	exit 1
 fi
 # End Option checking
 
