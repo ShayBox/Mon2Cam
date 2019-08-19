@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default Variables
-DEVICE_NUMBER=10
+DEVICE_NUMBER=50
 FPS=60
 # End Default Variables
 
@@ -65,13 +65,6 @@ then
 	$XRANDR --listactivemonitors
 	read -p "Which monitor: " MONITOR_NUMBER
 fi
-
-DEVICE="/dev/video$DEVICE_NUMBER"
-if [ -f $DEVICE ]
-then
-	echo "Error: $DEVICE exists, try adding '-d 100'"
-	exit 1
-fi
 # End Option checking
 
 # Monitor information
@@ -83,12 +76,15 @@ MONITOR_Y=`echo $MONITOR_INFO | cut -f3 -d'+'`
 # End Monitor information
 
 # Start Mon2Cam
-sudo modprobe -r v4l2loopback
+if ! $(sudo modprobe -r v4l2loopback &> /dev/null)
+then
+    echo "Turn off any sources using Mon2Cam before starting script"
+    exit 1
+fi
+
 sudo modprobe v4l2loopback video_nr=$DEVICE_NUMBER 'card_label=Mon2Cam'
 
 echo "CTRL + C to stop"
 echo "Your screen will look mirrored for you, not others"
-$FFMPEG -f x11grab -r $FPS -s "$MONITOR_WIDTH"x"$MONITOR_HEIGHT" -i "$DISPLAY"+"$MONITOR_X","$MONITOR_Y" -vcodec rawvideo $VFLIP $HFLIP -pix_fmt yuv420p -threads 0 -f v4l2 $DEVICE &> /dev/null
-
-sudo modprobe -r v4l2loopback
+$FFMPEG -f x11grab -r $FPS -s "$MONITOR_WIDTH"x"$MONITOR_HEIGHT" -i "$DISPLAY"+"$MONITOR_X","$MONITOR_Y" -vcodec rawvideo $VFLIP $HFLIP -pix_fmt yuv420p -threads 0 -f v4l2 /dev/video$DEVICE_NUMBER &> /dev/null
 # End Mon2Cam
