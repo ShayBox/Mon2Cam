@@ -28,6 +28,8 @@ options:
 -f, --framerate=FPS       set framerate
 -d, --device-number=NUM   set device number
 -m, --monitor-number=NUM  set monitor number
+-vf, --vertical-flip      vertically flip the monitor capture
+-hf, --horizontal-flip    horizontally flip the monitor capture
 ```
 
 ```
@@ -36,6 +38,7 @@ Monitors: 2
  1: +HDMI-0 1366/410x768/230+1920+0  HDMI-0
 Which monitor: 0
 CTRL + C to stop
+Your screen will look mirrored for you, not others
 ```
 
 ![Screenshot](Screenshot.png)
