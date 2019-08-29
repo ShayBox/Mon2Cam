@@ -21,6 +21,7 @@ do
 			echo "-m, --monitor-number=NUM  set monitor number"
 			echo "-vf, --vertical-flip      vertically flip the monitor capture"
 			echo "-hf, --horizontal-flip    horizontally flip the monitor capture"
+			echo "-r, --resolution H:W      manually set output resolution"
 			exit
 		;;
 		-f | --framerate)
@@ -37,6 +38,9 @@ do
 		;;
 		-hf | --horizontal-flip)
 			HFLIP="-vf hflip"
+		;;
+		-r | --resolution)
+			RES="-vf scale=$2"
 		;;
 	esac
 	shift
@@ -86,5 +90,5 @@ sudo modprobe v4l2loopback video_nr=$DEVICE_NUMBER 'card_label=Mon2Cam'
 
 echo "CTRL + C to stop"
 echo "Your screen will look mirrored for you, not others"
-$FFMPEG -f x11grab -r $FPS -s "$MONITOR_WIDTH"x"$MONITOR_HEIGHT" -i "$DISPLAY"+"$MONITOR_X","$MONITOR_Y" -vcodec rawvideo $VFLIP $HFLIP -pix_fmt yuv420p -threads 0 -f v4l2 /dev/video$DEVICE_NUMBER &> /dev/null
+$FFMPEG -f x11grab -r $FPS -s "$MONITOR_WIDTH"x"$MONITOR_HEIGHT" -i "$DISPLAY"+"$MONITOR_X","$MONITOR_Y" -vcodec rawvideo $RES $VFLIP $HFLIP -pix_fmt yuv420p -threads 0 -f v4l2 /dev/video$DEVICE_NUMBER &> /dev/null
 # End Mon2Cam
