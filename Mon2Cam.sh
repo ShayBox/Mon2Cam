@@ -3,6 +3,7 @@
 # Default Variables
 DEVICE_NUMBER=50
 FPS=60
+
 # End Default Variables
 
 # Options
@@ -22,6 +23,7 @@ do
 			echo "-vf, --vertical-flip      vertically flip the monitor capture"
 			echo "-hf, --horizontal-flip    horizontally flip the monitor capture"
 			echo "-r, --resolution H:W      manually set output resolution"
+			echo "-b, --border              add border when scaling to avoid stretching"
 			exit
 		;;
 		-f | --framerate)
@@ -41,6 +43,9 @@ do
 		;;
 		-r | --resolution)
 			RES="-vf scale=$2"
+		;;
+		-b | --border)
+			BORDER=$true
 		;;
 	esac
 	shift
@@ -78,6 +83,15 @@ MONITOR_WIDTH=`echo $MONITOR_INFO | cut -f1 -d'/'`
 MONITOR_X=`echo $MONITOR_INFO | cut -f2 -d'+'`
 MONITOR_Y=`echo $MONITOR_INFO | cut -f3 -d'+'`
 # End Monitor information
+
+# Border
+if [ ! -z ${RES+x} ] && [ ! -z ${BORDER+x} ]
+then
+	RES_WIDTH=`echo ${RES} | cut -f2 -d'=' | cut -f1 -d':'`;
+	RES_HEIGHT=`echo ${RES} | cut -f2 -d':'`;
+	RES="${RES}:force_original_aspect_ratio=decrease,pad=$RES_WIDTH:$RES_HEIGHT:x=($RES_WIDTH-iw)/2:y=($RES_HEIGHT-ih)/2"
+fi
+# End of Border
 
 # Start Mon2Cam
 if ! $(sudo modprobe -r v4l2loopback &> /dev/null)
