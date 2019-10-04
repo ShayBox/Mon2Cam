@@ -3,7 +3,6 @@
 # Default Variables
 DEVICE_NUMBER=50
 FPS=60
-
 # End Default Variables
 
 # Options
