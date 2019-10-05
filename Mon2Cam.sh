@@ -82,6 +82,12 @@ fi
 
 if [ "$BORDER" = true ]
 then
+	if [ -z "$RESOLUTION" ]
+	then
+		echo "You didn't specify a resolution (-r 1920:1080)"
+		exit
+	fi
+
 	RES_WIDTH=$(echo "${RESOLUTION}" | cut -f2 -d'=' | cut -f1 -d':');
 	RES_HEIGHT=$(echo "${RESOLUTION}" | cut -f2 -d':');
 	RESOLUTION="${RESOLUTION}:force_original_aspect_ratio=decrease,pad=$RES_WIDTH:$RES_HEIGHT:x=($RES_WIDTH-iw)/2:y=($RES_HEIGHT-ih)/2"
