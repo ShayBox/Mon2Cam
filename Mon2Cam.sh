@@ -1,9 +1,17 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Default Variables
-DEVICE_NUMBER=50
+set -o errexit
+set -o pipefail
+set -o nounset
+
+# Variables
 FPS=60
-# End Default Variables
+DEVICE_NUMBER=50
+MONITOR_NUMBER=
+VERTICAL_FLIP=
+HORIZONTAL_FLIP=
+RESOLUTION=
+BORDER=false
 
 # Options
 while [ ! $# -eq 0 ]
@@ -35,73 +43,66 @@ do
 			MONITOR_NUMBER=$2
 		;;
 		-vf | --vertical-flip)
-			VFLIP="-vf vflip"
+			VERTICAL_FLIP="-vf vflip"
 		;;
 		-hf | --horizontal-flip)
-			HFLIP="-vf hflip"
+			HORIZONTAL_FLIP="-vf hflip"
 		;;
 		-r | --resolution)
-			RES="-vf scale=$2"
+			RESOLUTION="-vf scale=$2"
 		;;
 		-b | --border)
-			BORDER=$true
+			BORDER=true
 		;;
 	esac
 	shift
 done
-# End Options
 
 # Dependency checking
 XRANDR=$(command -v xrandr)
-if ! [ -x $XRANDR ]
+if ! [ -x "$XRANDR" ]
 then
 	echo "Error: xrandr is not installed."
 	exit 1
 fi
 
 FFMPEG=$(command -v ffmpeg)
-if ! [ -x $FFMPEG ]
+if ! [ -x "$FFMPEG" ]
 then
 	echo "Error: ffmpeg is not installed."
 	exit 1
 fi
-# End Dependency checking
 
 # Option checking
-if [ -z $MONITOR_NUMBER ]
+if [ -z "$MONITOR_NUMBER" ]
 then
 	$XRANDR --listactivemonitors
-	read -p "Which monitor: " MONITOR_NUMBER
+	read -r -p "Which monitor: " MONITOR_NUMBER
 fi
-# End Option checking
+
+if [ "$BORDER" = true ]
+then
+	RES_WIDTH=$(echo "${RESOLUTION}" | cut -f2 -d'=' | cut -f1 -d':');
+	RES_HEIGHT=$(echo "${RESOLUTION}" | cut -f2 -d':');
+	RESOLUTION="${RESOLUTION}:force_original_aspect_ratio=decrease,pad=$RES_WIDTH:$RES_HEIGHT:x=($RES_WIDTH-iw)/2:y=($RES_HEIGHT-ih)/2"
+fi
 
 # Monitor information
-MONITOR_INFO=`xrandr --listactivemonitors | grep "$MONITOR_NUMBER:" | cut -f4 -d' '`
-MONITOR_HEIGHT=`echo $MONITOR_INFO | cut -f2 -d'/' | cut -f2 -d'x'`
-MONITOR_WIDTH=`echo $MONITOR_INFO | cut -f1 -d'/'`
-MONITOR_X=`echo $MONITOR_INFO | cut -f2 -d'+'`
-MONITOR_Y=`echo $MONITOR_INFO | cut -f3 -d'+'`
-# End Monitor information
-
-# Border
-if [ ! -z ${RES+x} ] && [ ! -z ${BORDER+x} ]
-then
-	RES_WIDTH=`echo ${RES} | cut -f2 -d'=' | cut -f1 -d':'`;
-	RES_HEIGHT=`echo ${RES} | cut -f2 -d':'`;
-	RES="${RES}:force_original_aspect_ratio=decrease,pad=$RES_WIDTH:$RES_HEIGHT:x=($RES_WIDTH-iw)/2:y=($RES_HEIGHT-ih)/2"
-fi
-# End of Border
+MONITOR_INFO=$(xrandr --listactivemonitors | grep "$MONITOR_NUMBER:" | cut -f4 -d' ')
+MONITOR_HEIGHT=$(echo "$MONITOR_INFO" | cut -f2 -d'/' | cut -f2 -d'x')
+MONITOR_WIDTH=$(echo "$MONITOR_INFO" | cut -f1 -d'/')
+MONITOR_X=$(echo "$MONITOR_INFO" | cut -f2 -d'+')
+MONITOR_Y=$(echo "$MONITOR_INFO" | cut -f3 -d'+')
 
 # Start Mon2Cam
 if ! $(sudo modprobe -r v4l2loopback &> /dev/null)
 then
-    echo "Turn off any sources using Mon2Cam before starting script"
-    exit 1
+	echo "Turn off any sources using Mon2Cam before starting script"
+	exit 1
 fi
 
-sudo modprobe v4l2loopback video_nr=$DEVICE_NUMBER 'card_label=Mon2Cam'
+sudo modprobe v4l2loopback video_nr="$DEVICE_NUMBER" 'card_label=Mon2Cam'
 
 echo "CTRL + C to stop"
 echo "Your screen will look mirrored for you, not others"
-$FFMPEG -f x11grab -r $FPS -s "$MONITOR_WIDTH"x"$MONITOR_HEIGHT" -i "$DISPLAY"+"$MONITOR_X","$MONITOR_Y" -vcodec rawvideo $RES $VFLIP $HFLIP -pix_fmt yuv420p -threads 0 -f v4l2 /dev/video$DEVICE_NUMBER &> /dev/null
-# End Mon2Cam
+$FFMPEG -f x11grab -r "$FPS" -s "$MONITOR_WIDTH"x"$MONITOR_HEIGHT" -i "$DISPLAY"+"$MONITOR_X","$MONITOR_Y" -vcodec rawvideo $RESOLUTION $VERTICAL_FLIP $HORIZONTAL_FLIP -pix_fmt yuv420p -threads 0 -f v4l2 /dev/video"$DEVICE_NUMBER" &> /dev/null

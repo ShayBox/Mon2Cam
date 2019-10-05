@@ -30,12 +30,15 @@ options:
 -m, --monitor-number=NUM  set monitor number
 -vf, --vertical-flip      vertically flip the monitor capture
 -hf, --horizontal-flip    horizontally flip the monitor capture
+-r, --resolution H:W      manually set output resolution
+-b, --border              add border when scaling to avoid stretching
 ```
 
 ```
-Monitors: 2
- 0: +*DP-0 1920/531x1080/299+0+0  DP-0
- 1: +HDMI-0 1366/410x768/230+1920+0  HDMI-0
+Monitors: 3
+ 0: +*DP-0 1920/531x1080/299+1366+0  DP-0
+ 1: +DP-2 1366/410x768/230+3286+0  DP-2
+ 2: +HDMI-0 1366/410x768/230+0+0  HDMI-0
 Which monitor: 0
 CTRL + C to stop
 Your screen will look mirrored for you, not others
