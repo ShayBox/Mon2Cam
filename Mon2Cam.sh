@@ -8,9 +8,7 @@ set -o nounset
 FPS=60
 DEVICE_NUMBER=50
 MONITOR_NUMBER=
-VERTICAL_FLIP=
-HORIZONTAL_FLIP=
-RESOLUTION=
+FFMPEG_OPTIONS=
 BORDER=false
 
 # Options
@@ -20,17 +18,17 @@ do
 		-h | --help)
 			echo "$0 - Monitor to Camera"
 			echo ""
-			echo "$0 [option] [value]"
+			echo "$0 [options] [value]"
 			echo ""
 			echo "options:"
-			echo "-h, --help                show help"
-			echo "-f, --framerate=FPS       set framerate"
-			echo "-d, --device-number=NUM   set device number"
-			echo "-m, --monitor-number=NUM  set monitor number"
+			echo "-h,  --help                show help"
+			echo "-f,  --framerate=FPS       set framerate"
+			echo "-d,  --device-number=NUM   set device number"
+			echo "-m,  --monitor-number=NUM  set monitor number"
 			echo "-vf, --vertical-flip      vertically flip the monitor capture"
 			echo "-hf, --horizontal-flip    horizontally flip the monitor capture"
-			echo "-r, --resolution H:W      manually set output resolution"
-			echo "-b, --border              add border when scaling to avoid stretching"
+			echo "-r,  --resolution H:W      manually set output resolution"
+			echo "-b,  --border              add border when scaling to avoid stretching"
 			exit
 		;;
 		-f | --framerate)
@@ -43,13 +41,13 @@ do
 			MONITOR_NUMBER=$2
 		;;
 		-vf | --vertical-flip)
-			VERTICAL_FLIP="-vf vflip"
+			FFMPEG_OPTIONS+="-vf vflip"
 		;;
 		-hf | --horizontal-flip)
-			HORIZONTAL_FLIP="-vf hflip"
+			FFMPEG_OPTIONS+="-vf hflip"
 		;;
 		-r | --resolution)
-			RESOLUTION="-vf scale=$2"
+			FFMPEG_OPTIONS+="-vf scale=$2"
 		;;
 		-b | --border)
 			BORDER=true
@@ -85,7 +83,7 @@ then
 	if [ -z "$RESOLUTION" ]
 	then
 		echo "You didn't specify a resolution (-r 1920:1080)"
-		exit
+		exit 1
 	fi
 
 	RES_WIDTH=$(echo "${RESOLUTION}" | cut -f2 -d'=' | cut -f1 -d':');
@@ -100,15 +98,25 @@ MONITOR_WIDTH=$(echo "$MONITOR_INFO" | cut -f1 -d'/')
 MONITOR_X=$(echo "$MONITOR_INFO" | cut -f2 -d'+')
 MONITOR_Y=$(echo "$MONITOR_INFO" | cut -f3 -d'+')
 
-# Start Mon2Cam
+# Unload v4l2loopback module
 if ! $(sudo modprobe -r v4l2loopback &> /dev/null)
 then
 	echo "Turn off any sources using Mon2Cam before starting script"
 	exit 1
 fi
 
+# Load v4lwloopback module
 sudo modprobe v4l2loopback video_nr="$DEVICE_NUMBER" 'card_label=Mon2Cam'
 
+# Use x11grab to stream screen into v4l2loopback device
 echo "CTRL + C to stop"
 echo "Your screen will look mirrored for you, not others"
-$FFMPEG -f x11grab -r "$FPS" -s "$MONITOR_WIDTH"x"$MONITOR_HEIGHT" -i "$DISPLAY"+"$MONITOR_X","$MONITOR_Y" -vcodec rawvideo $RESOLUTION $VERTICAL_FLIP $HORIZONTAL_FLIP -pix_fmt yuv420p -threads 0 -f v4l2 /dev/video"$DEVICE_NUMBER" &> /dev/null
+$FFMPEG \
+	-f x11grab \
+	-r "$FPS" \
+	-s "$MONITOR_WIDTH"x"$MONITOR_HEIGHT" \
+	-i "$DISPLAY"+"$MONITOR_X","$MONITOR_Y" \
+	$FFMPEG_OPTIONS \
+	-pix_fmt yuv420p \
+	-f v4l2 \
+	/dev/video"$DEVICE_NUMBER" &> /dev/null
