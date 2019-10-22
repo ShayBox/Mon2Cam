@@ -8,7 +8,7 @@ Dependencies:
 - v4l2loopback 0.12+
 
 Note:
-Ubuntu 18.04 and below does not provide v4l2loopback 0.12, if you use older versions of Ubuntu you will need to [compile v4l2loopback from source](https://github.com/umlaeute/v4l2loopback#install)
+Ubuntu 18.04 and below does not provide v4l2loopback 0.12, if you use older versions of Ubuntu you will need to [compile from source](https://github.com/umlaeute/v4l2loopback#install)
 
 Instructions:
 -
@@ -24,17 +24,17 @@ Or use the [AUR package](https://aur.archlinux.org/packages/mon2cam-git/)
 ```
 ./Mon2Cam.sh - Monitor to Camera
 
-./Mon2Cam.sh [option] [value]
+./Mon2Cam.sh [options] [value]
 
 options:
--h,  --help                show help
--f,  --framerate=FPS       set framerate
--d,  --device-number=NUM   set device number
--m,  --monitor-number=NUM  set monitor number
+-h,  --help               show help
+-f,  --framerate=FPS      set framerate
+-d,  --device-number=NUM  set device number
+-m,  --monitor-number=NUM set monitor number
 -vf, --vertical-flip      vertically flip the monitor capture
 -hf, --horizontal-flip    horizontally flip the monitor capture
--r,  --resolution H:W      manually set output resolution
--b,  --border              add border when scaling to avoid stretching
+-r,  --resolution H:W     manually set output resolution
+-b,  --border             add border when scaling to avoid stretching
 ```
 
 ```
