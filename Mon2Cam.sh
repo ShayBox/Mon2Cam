@@ -71,13 +71,20 @@ then
 	exit 1
 fi
 
-# Option checking
-if [ -z "$MONITOR_NUMBER" ]
+if ! [ -f /dev/video"$DEVICE_NUMBER" ]
 then
-	$XRANDR --listactivemonitors
-	read -r -p "Which monitor: " MONITOR_NUMBER
+	# Unload v4l2loopback module
+	if ! $(sudo modprobe -r v4l2loopback &> /dev/null)
+	then
+		echo "Turn off any sources using Mon2Cam before starting script"
+		exit 1
+	fi
+
+	# Load v4lwloopback module
+	sudo modprobe v4l2loopback video_nr="$DEVICE_NUMBER" 'card_label=Mon2Cam'
 fi
 
+# Option checking
 if [ "$BORDER" = true ]
 then
 	if [ -z "$RESOLUTION" ]
@@ -91,22 +98,18 @@ then
 	RESOLUTION="${RESOLUTION}:force_original_aspect_ratio=decrease,pad=$RES_WIDTH:$RES_HEIGHT:x=($RES_WIDTH-iw)/2:y=($RES_HEIGHT-ih)/2"
 fi
 
+if [ -z "$MONITOR_NUMBER" ]
+then
+	$XRANDR --listactivemonitors
+	read -r -p "Which monitor: " MONITOR_NUMBER
+fi
+
 # Monitor information
 MONITOR_INFO=$(xrandr --listactivemonitors | grep "$MONITOR_NUMBER:" | cut -f4 -d' ')
 MONITOR_HEIGHT=$(echo "$MONITOR_INFO" | cut -f2 -d'/' | cut -f2 -d'x')
 MONITOR_WIDTH=$(echo "$MONITOR_INFO" | cut -f1 -d'/')
 MONITOR_X=$(echo "$MONITOR_INFO" | cut -f2 -d'+')
 MONITOR_Y=$(echo "$MONITOR_INFO" | cut -f3 -d'+')
-
-# Unload v4l2loopback module
-if ! $(sudo modprobe -r v4l2loopback &> /dev/null)
-then
-	echo "Turn off any sources using Mon2Cam before starting script"
-	exit 1
-fi
-
-# Load v4lwloopback module
-sudo modprobe v4l2loopback video_nr="$DEVICE_NUMBER" 'card_label=Mon2Cam'
 
 # Use x11grab to stream screen into v4l2loopback device
 echo "CTRL + C to stop"
