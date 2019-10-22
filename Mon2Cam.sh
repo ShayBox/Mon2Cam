@@ -21,14 +21,14 @@ do
 			echo "$0 [options] [value]"
 			echo ""
 			echo "options:"
-			echo "-h,  --help                show help"
-			echo "-f,  --framerate=FPS       set framerate"
-			echo "-d,  --device-number=NUM   set device number"
-			echo "-m,  --monitor-number=NUM  set monitor number"
+			echo "-h,  --help               show help"
+			echo "-f,  --framerate=FPS      set framerate"
+			echo "-d,  --device-number=NUM  set device number"
+			echo "-m,  --monitor-number=NUM set monitor number"
+			echo "-r,  --resolution H:W     manually set output resolution"
 			echo "-vf, --vertical-flip      vertically flip the monitor capture"
 			echo "-hf, --horizontal-flip    horizontally flip the monitor capture"
-			echo "-r,  --resolution H:W      manually set output resolution"
-			echo "-b,  --border              add border when scaling to avoid stretching"
+			echo "-b,  --border             add border when scaling to avoid stretching"
 			exit
 		;;
 		-f | --framerate)
@@ -40,14 +40,14 @@ do
 		-m | --monitor-number)
 			MONITOR_NUMBER=$2
 		;;
+		-r | --resolution)
+			FFMPEG_OPTIONS+="-vf scale=$2"
+		;;
 		-vf | --vertical-flip)
 			FFMPEG_OPTIONS+="-vf vflip"
 		;;
 		-hf | --horizontal-flip)
 			FFMPEG_OPTIONS+="-vf hflip"
-		;;
-		-r | --resolution)
-			FFMPEG_OPTIONS+="-vf scale=$2"
 		;;
 		-b | --border)
 			BORDER=true
@@ -71,12 +71,13 @@ then
 	exit 1
 fi
 
+# Reload v4l2loopback if device doesn't exist
 if ! [ -f /dev/video"$DEVICE_NUMBER" ]
 then
 	# Unload v4l2loopback module
 	if ! $(sudo modprobe -r v4l2loopback &> /dev/null)
 	then
-		echo "Turn off any sources using Mon2Cam before starting script"
+		echo "Unable to unload v4l2loopback, Close any programs using virtual video devices and try again"
 		exit 1
 	fi
 
@@ -98,6 +99,7 @@ then
 	RESOLUTION="${RESOLUTION}:force_original_aspect_ratio=decrease,pad=$RES_WIDTH:$RES_HEIGHT:x=($RES_WIDTH-iw)/2:y=($RES_HEIGHT-ih)/2"
 fi
 
+# Pick monitor
 if [ -z "$MONITOR_NUMBER" ]
 then
 	$XRANDR --listactivemonitors
