@@ -33,7 +33,7 @@ options:
 -m,  --monitor-number=NUM set monitor number
 -vf, --vertical-flip      vertically flip the monitor capture
 -hf, --horizontal-flip    horizontally flip the monitor capture
--r,  --resolution H:W     manually set output resolution
+-r,  --resolution W:H     manually set output resolution
 -b,  --border             add border when scaling to avoid stretching
 ```
 
