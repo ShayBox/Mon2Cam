@@ -25,7 +25,7 @@ do
 			echo "-f,  --framerate=FPS      set framerate"
 			echo "-d,  --device-number=NUM  set device number"
 			echo "-m,  --monitor-number=NUM set monitor number"
-			echo "-r,  --resolution H:W     manually set output resolution"
+			echo "-r,  --resolution W:H     manually set output resolution"
 			echo "-vf, --vertical-flip      vertically flip the monitor capture"
 			echo "-hf, --horizontal-flip    horizontally flip the monitor capture"
 			echo "-b,  --border             add border when scaling to avoid stretching"
