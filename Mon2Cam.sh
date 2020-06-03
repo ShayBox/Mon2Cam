@@ -76,7 +76,7 @@ then
 	# Unload v4l2loopback module
 	if ! $(sudo modprobe -r v4l2loopback &> /dev/null)
 	then
-		echo "Unable to unload v4l2loopback, Close any programs using virtual video devices and try again"
+		echo "Unable to unload v4l2loopback, make sure you installed v4l2loopback and close any programs using virtual video devices and try again."
 		exit 1
 	fi
 
