@@ -21,9 +21,9 @@ do
 			echo ""
 			echo "options:"
 			echo "-h,  --help               show help"
-			echo "-f,  --framerate=FPS      set framerate"
-			echo "-d,  --device-number=NUM  set device number"
-			echo "-m,  --monitor-number=NUM set monitor number"
+			echo "-f,  --framerate FPS      set framerate"
+			echo "-d,  --device-number NUM  set device number"
+			echo "-m,  --monitor-number NUM set monitor number"
 			echo "-r,  --resolution W:H     manually set output resolution"
 			echo "-vf, --vertical-flip      vertically flip the monitor capture"
 			echo "-hf, --horizontal-flip    horizontally flip the monitor capture"
@@ -76,7 +76,7 @@ then
 	# Unload v4l2loopback module
 	if ! $(sudo modprobe -r v4l2loopback &> /dev/null)
 	then
-		echo "Unable to unload v4l2loopback, Close any programs using virtual video devices and try again"
+		echo "Unable to unload v4l2loopback, make sure you installed v4l2loopback and close any programs using virtual video devices and try again."
 		exit 1
 	fi
 
