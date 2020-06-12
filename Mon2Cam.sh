@@ -41,6 +41,7 @@ do
 		;;
 		-r | --resolution)
 			FFMPEG_OPTIONS+="-vf scale=$2"
+			RESOLUTION=$2
 		;;
 		-vf | --vertical-flip)
 			FFMPEG_OPTIONS+="-vf vflip"
