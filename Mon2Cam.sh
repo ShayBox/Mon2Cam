@@ -32,6 +32,7 @@ do
 			echo "-b,  --border             add border when scaling to avoid stretching"
 			echo "-s,  --sound              create virtual sink and route sound into it (requires pulseaudio)"
 			echo "-v,  --verbose            Show verbose output"
+      echo "-w,  --wayland            enable support for Wayland sessions using wf-recorder"
 			exit
 		;;
 		-f | --framerate)
@@ -62,16 +63,26 @@ do
 		-v | --verbose)
             OUTPUT=/dev/tty
         ;;
+    -w | --wayland)
+      WAYLAND=true
+    ;;
 	esac
 	shift
 done
 
-# Dependency checking
-XRANDR=$(command -v xrandr)
-if ! [ -x "$XRANDR" ]
+# dependency checking for wayland recording, if enabled
+if [ $WAYLAND ]
 then
-	echo "Error: xrandr is not installed."
-	exit 1
+  WFRECORDER=$(command -v wf-recorder)
+  echo "Error: wf-recorder is not installed."
+  exit 1
+else # only X sessions will need xrandr
+  XRANDR=$(command -v xrandr)
+  if ! [ -x "$XRANDR" ]
+  then
+    echo "Error: xrandr is not installed."
+    exit 1
+  fi
 fi
 
 FFMPEG=$(command -v ffmpeg)
@@ -80,6 +91,7 @@ then
 	echo "Error: ffmpeg is not installed."
 	exit 1
 fi
+
 
 # Reload v4l2loopback if device doesn't exist
 if [ ! -c /dev/video"$DEVICE_NUMBER" ]
@@ -91,7 +103,7 @@ then
 		exit 1
 	fi
 
-	# Load v4lwloopback module
+	# Load v4l2loopback module
 	sudo modprobe v4l2loopback video_nr="$DEVICE_NUMBER" 'card_label=Mon2Cam'
 fi
 
