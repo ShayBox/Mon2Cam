@@ -6,11 +6,12 @@ set -o nounset
 # Default variables
 FPS=60
 DEVICE_NUMBER=50
-MONITOR_NUMBER=
+MONITOR_ID=
 FFMPEG_OPTIONS=
 BORDER=false
 SOUND=false
 OUTPUT=/dev/null
+WAYLAND=false
 
 # Options
 while [ ! $# -eq 0 ]
@@ -25,7 +26,7 @@ do
 			echo "-h,  --help               show help"
 			echo "-f,  --framerate FPS      set framerate"
 			echo "-d,  --device-number NUM  set device number"
-			echo "-m,  --monitor-number NUM set monitor number"
+			echo "-m,  --monitor-id NUM     set monitor id"
 			echo "-r,  --resolution W:H     manually set output resolution"
 			echo "-vf, --vertical-flip      vertically flip the monitor capture"
 			echo "-hf, --horizontal-flip    horizontally flip the monitor capture"
@@ -41,8 +42,8 @@ do
 		-d | --device-number)
 			DEVICE_NUMBER=$2
 		;;
-		-m | --monitor-number)
-			MONITOR_NUMBER=$2
+		-m | --monitor-id)
+			MONITOR_ID=$2
 		;;
 		-r | --resolution)
 			FFMPEG_OPTIONS+="-vf scale=$2"
@@ -71,12 +72,22 @@ do
 done
 
 # dependency checking for wayland recording, if enabled
-if [ $WAYLAND ]
+if [ "$WAYLAND" = true ]
 then
   WFRECORDER=$(command -v wf-recorder)
-  echo "Error: wf-recorder is not installed."
-  exit 1
-else # only X sessions will need xrandr
+  if ! [ -x "$WFRECORDER" ]
+  then
+    echo "Error: wf-recorder is not installed."
+    exit 1
+  fi
+  WLRRANDR=$(command -v wlr-randr)
+  if ! [ -x "$WLRRANDR" ]
+  then
+    echo "Error: wlr-randr is not installed."
+    exit 1
+  fi
+else
+  # only X sessions will need xrandr
   XRANDR=$(command -v xrandr)
   if ! [ -x "$XRANDR" ]
   then
@@ -122,10 +133,18 @@ then
 fi
 
 # Pick monitor
-if [ -z "$MONITOR_NUMBER" ]
+if [ -z "$MONITOR_ID" ]
 then
-	$XRANDR --listactivemonitors
-	read -r -p "Which monitor: " MONITOR_NUMBER
+  if [ "$WAYLAND" = true ]
+  then
+    # swaymsg would be more ideal but is specific to sway
+    # parsing the output of wlr-randr works but is not ideal
+    # this will show the current display resolution, position, ID, and name
+    $WLRRANDR | egrep '(current|Position|")' 
+  else
+    $XRANDR --listactivemonitors
+  fi
+	read -r -p "Which monitor: " MONITOR_ID
 fi
 
 # AUDIO
@@ -150,48 +169,55 @@ then
 	echo "$SINK_INPUTS"
 
 	read -r -p "Select which window(s) to route (Space separated list e.g.:3 5):" ROUTED_SINKS
-	IFS=' ' read -ra ROUTED_SINKS_ARRAY <<< "$ROUTED_SINKS"
-	for sink in "${ROUTED_SINKS_ARRAY[@]}"
-	do
-		if [ -n "`pacmd move-sink-input $sink \"VirtualSink\"`" ]
-		then
-			echo "Error encountered while trying to move sink input. Check if you entered a correct id or correct ids."
-			exit 1
-		fi
-	done
+IFS=' ' read -ra ROUTED_SINKS_ARRAY <<< "$ROUTED_SINKS"
+for sink in "${ROUTED_SINKS_ARRAY[@]}"
+do
+  if [ -n "`pacmd move-sink-input $sink \"VirtualSink\"`" ]
+  then
+    echo "Error encountered while trying to move sink input. Check if you entered a correct id or correct ids."
+    exit 1
+  fi
+done
 
-	# Move selected microphone input to the virtual sink
-	SOURCES=`pacmd list-sources | tr '\n' '\r' | perl -pe 's/ *index: ([0-9]+).+?device\.description = "([^\r]+)"\r.+?(?=index:|$)/\2:\1\r/g' | tr '\r' '\n'` # Display indexes
-	echo "$SOURCES"
+# Move selected microphone input to the virtual sink
+SOURCES=`pacmd list-sources | tr '\n' '\r' | perl -pe 's/ *index: ([0-9]+).+?device\.description = "([^\r]+)"\r.+?(?=index:|$)/\2:\1\r/g' | tr '\r' '\n'` # Display indexes
+echo "$SOURCES"
 
-	read -r -p "Select which source(s) to route (Space separated list e.g.:3 5):" ROUTED_SOURCES
-	IFS=' ' read -ra ROUTED_SOURCES_ARRAY <<< "$ROUTED_SOURCES"
-	for source in "${ROUTED_SOURCES_ARRAY[@]}"
-	do
-		if [ -n "`(pactl load-module module-loopback source=$source sink=\"$VIRTUAL_SINK\" 1>/dev/null) 2>&1`" ]
-		then
-			echo "Error encountered while trying to move microphone into the virtual sink. Check if you entered a correct id or correct ids."
-			exit 1
-		fi
-	done
+read -r -p "Select which source(s) to route (Space separated list e.g.:3 5):" ROUTED_SOURCES
+IFS=' ' read -ra ROUTED_SOURCES_ARRAY <<< "$ROUTED_SOURCES"
+for source in "${ROUTED_SOURCES_ARRAY[@]}"
+do
+  if [ -n "`(pactl load-module module-loopback source=$source sink=\"$VIRTUAL_SINK\" 1>/dev/null) 2>&1`" ]
+  then
+    echo "Error encountered while trying to move microphone into the virtual sink. Check if you entered a correct id or correct ids."
+    exit 1
+  fi
+done
 fi
 
-# Monitor information
-MONITOR_INFO=$(xrandr --listactivemonitors | grep "$MONITOR_NUMBER:" | cut -f4 -d' ')
-MONITOR_HEIGHT=$(echo "$MONITOR_INFO" | cut -f2 -d'/' | cut -f2 -d'x')
-MONITOR_WIDTH=$(echo "$MONITOR_INFO" | cut -f1 -d'/')
-MONITOR_X=$(echo "$MONITOR_INFO" | cut -f2 -d'+')
-MONITOR_Y=$(echo "$MONITOR_INFO" | cut -f3 -d'+')
+  # Use x11grab to stream screen into v4l2loopback device
+  echo "CTRL + C to stop"
+  echo "Your screen will look mirrored for you, not others"
+  
+if ! [ "$WAYLAND" = true ]
+then
+  # Monitor information
+  MONITOR_INFO=$(xrandr --listactivemonitors | grep "$MONITOR_ID:" | cut -f4 -d' ')
+  MONITOR_HEIGHT=$(echo "$MONITOR_INFO" | cut -f2 -d'/' | cut -f2 -d'x')
+  MONITOR_WIDTH=$(echo "$MONITOR_INFO" | cut -f1 -d'/')
+  MONITOR_X=$(echo "$MONITOR_INFO" | cut -f2 -d'+')
+  MONITOR_Y=$(echo "$MONITOR_INFO" | cut -f3 -d'+')
 
-# Use x11grab to stream screen into v4l2loopback device
-echo "CTRL + C to stop"
-echo "Your screen will look mirrored for you, not others"
-$FFMPEG \
-	-f x11grab \
-	-r "$FPS" \
-	-s "$MONITOR_WIDTH"x"$MONITOR_HEIGHT" \
-	-i "$DISPLAY"+"$MONITOR_X","$MONITOR_Y" \
-	$FFMPEG_OPTIONS \
-	-pix_fmt yuv420p \
-	-f v4l2 \
-	/dev/video"$DEVICE_NUMBER"  &> $OUTPUT
+  $FFMPEG \
+    -f x11grab \
+    -r "$FPS" \
+    -s "$MONITOR_WIDTH"x"$MONITOR_HEIGHT" \
+    -i "$DISPLAY"+"$MONITOR_X","$MONITOR_Y" \
+    $FFMPEG_OPTIONS \
+    -pix_fmt yuv420p \
+    -f v4l2 \
+    /dev/video"$DEVICE_NUMBER" &> $OUTPUT
+else
+  # with wf-recorder, it is not necessary to know the resolution and position
+  $WFRECORDER -o $MONITOR_ID -x yuv420p -c rawvideo -m v4l2 -f /dev/video"$DEVICE_NUMBER" &>/dev/null 
+fi
