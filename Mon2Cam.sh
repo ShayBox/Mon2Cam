@@ -71,6 +71,14 @@ do
 	shift
 done
 
+# check for the `xisxwayland` tool and run it if it's found
+XISXWAYLAND=$(command -v xisxwayland)
+if [ -x "$XISXWAYLAND" ]
+then
+  # if X is actually Xwayland, then use wf-recorder instead
+  WAYLAND=$($XISXWAYLAND && echo true)
+fi
+
 # dependency checking for wayland recording, if enabled
 if [ "$WAYLAND" = true ]
 then
