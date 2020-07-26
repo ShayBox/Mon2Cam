@@ -62,11 +62,11 @@ do
 			SOUND=true
 		;;
 		-v | --verbose)
-            OUTPUT=/dev/tty
-        ;;
-    -w | --wayland)
-      WAYLAND=true
-    ;;
+						OUTPUT=/dev/tty
+				;;
+		-w | --wayland)
+			WAYLAND=true
+		;;
 	esac
 	shift
 done
@@ -75,33 +75,33 @@ done
 XISXWAYLAND=$(command -v xisxwayland)
 if [ -x "$XISXWAYLAND" ]
 then
-  # if X is actually Xwayland, then use wf-recorder instead
-  WAYLAND=$($XISXWAYLAND && echo true)
+	# if X is actually Xwayland, then use wf-recorder instead
+	WAYLAND=$($XISXWAYLAND && echo true)
 fi
 
 # dependency checking for wayland recording, if enabled
 if [ "$WAYLAND" = true ]
 then
-  WFRECORDER=$(command -v wf-recorder)
-  if ! [ -x "$WFRECORDER" ]
-  then
-    echo "Error: wf-recorder is not installed."
-    exit 1
-  fi
-  WLRRANDR=$(command -v wlr-randr)
-  if ! [ -x "$WLRRANDR" ]
-  then
-    echo "Error: wlr-randr is not installed."
-    exit 1
-  fi
+	WFRECORDER=$(command -v wf-recorder)
+	if ! [ -x "$WFRECORDER" ]
+	then
+		echo "Error: wf-recorder is not installed."
+		exit 1
+	fi
+	WLRRANDR=$(command -v wlr-randr)
+	if ! [ -x "$WLRRANDR" ]
+	then
+		echo "Error: wlr-randr is not installed."
+		exit 1
+	fi
 else
-  # only X sessions will need xrandr
-  XRANDR=$(command -v xrandr)
-  if ! [ -x "$XRANDR" ]
-  then
-    echo "Error: xrandr is not installed."
-    exit 1
-  fi
+	# only X sessions will need xrandr
+	XRANDR=$(command -v xrandr)
+	if ! [ -x "$XRANDR" ]
+	then
+		echo "Error: xrandr is not installed."
+		exit 1
+	fi
 fi
 
 FFMPEG=$(command -v ffmpeg)
@@ -143,15 +143,15 @@ fi
 # Pick monitor
 if [ -z "$MONITOR_ID" ]
 then
-  if [ "$WAYLAND" = true ]
-  then
-    # swaymsg would be more ideal but is specific to sway
-    # parsing the output of wlr-randr works but is not ideal
-    # this will show the current display resolution, position, ID, and name
-    $WLRRANDR | egrep '(current|Position|")' 
-  else
-    $XRANDR --listactivemonitors
-  fi
+	if [ "$WAYLAND" = true ]
+	then
+		# swaymsg would be more ideal but is specific to sway
+		# parsing the output of wlr-randr works but is not ideal
+		# this will show the current display resolution, position, ID, and name
+		$WLRRANDR | egrep '(current|Position|")'
+	else
+		$XRANDR --listactivemonitors
+	fi
 	read -r -p "Which monitor: " MONITOR_ID
 fi
 
@@ -203,29 +203,29 @@ do
 done
 fi
 
-  # Use x11grab to stream screen into v4l2loopback device
-  echo "CTRL + C to stop"
-  echo "Your screen will look mirrored for you, not others"
-  
+	# Use x11grab to stream screen into v4l2loopback device
+	echo "CTRL + C to stop"
+	echo "Your screen will look mirrored for you, not others"
+
 if ! [ "$WAYLAND" = true ]
 then
-  # Monitor information
-  MONITOR_INFO=$(xrandr --listactivemonitors | grep "$MONITOR_ID:" | cut -f4 -d' ')
-  MONITOR_HEIGHT=$(echo "$MONITOR_INFO" | cut -f2 -d'/' | cut -f2 -d'x')
-  MONITOR_WIDTH=$(echo "$MONITOR_INFO" | cut -f1 -d'/')
-  MONITOR_X=$(echo "$MONITOR_INFO" | cut -f2 -d'+')
-  MONITOR_Y=$(echo "$MONITOR_INFO" | cut -f3 -d'+')
+	# Monitor information
+	MONITOR_INFO=$(xrandr --listactivemonitors | grep "$MONITOR_ID:" | cut -f4 -d' ')
+	MONITOR_HEIGHT=$(echo "$MONITOR_INFO" | cut -f2 -d'/' | cut -f2 -d'x')
+	MONITOR_WIDTH=$(echo "$MONITOR_INFO" | cut -f1 -d'/')
+	MONITOR_X=$(echo "$MONITOR_INFO" | cut -f2 -d'+')
+	MONITOR_Y=$(echo "$MONITOR_INFO" | cut -f3 -d'+')
 
-  $FFMPEG \
-    -f x11grab \
-    -r "$FPS" \
-    -s "$MONITOR_WIDTH"x"$MONITOR_HEIGHT" \
-    -i "$DISPLAY"+"$MONITOR_X","$MONITOR_Y" \
-    $FFMPEG_OPTIONS \
-    -pix_fmt yuv420p \
-    -f v4l2 \
-    /dev/video"$DEVICE_NUMBER" &> $OUTPUT
+	$FFMPEG \
+		-f x11grab \
+		-r "$FPS" \
+		-s "$MONITOR_WIDTH"x"$MONITOR_HEIGHT" \
+		-i "$DISPLAY"+"$MONITOR_X","$MONITOR_Y" \
+		$FFMPEG_OPTIONS \
+		-pix_fmt yuv420p \
+		-f v4l2 \
+		/dev/video"$DEVICE_NUMBER" &> $OUTPUT
 else
-  # with wf-recorder, it is not necessary to know the resolution and position
-  $WFRECORDER -o $MONITOR_ID -x yuv420p -c rawvideo -m v4l2 -f /dev/video"$DEVICE_NUMBER" &>/dev/null 
+	# with wf-recorder, it is not necessary to know the resolution and position
+	$WFRECORDER -o $MONITOR_ID -x yuv420p -c rawvideo -m v4l2 -f /dev/video"$DEVICE_NUMBER" &>/dev/null
 fi
