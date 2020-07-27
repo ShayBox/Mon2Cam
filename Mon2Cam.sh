@@ -124,13 +124,15 @@ then
 		VIRTUAL_SINK_INDEX=`pactl load-module module-null-sink sink_name=$VIRTUAL_SINK`
 		echo "Created VirtualSink with index: $VIRTUAL_SINK_INDEX"
 		pacmd "update-sink-proplist "$VIRTUAL_SINK" device.description='$VIRTUAL_SINK_DESCRIPTION'"
+		pacmd "update-source-proplist VirtualSink.monitor device.description=\"Monitor of Mon2Cam Sink\"" # The double-escaped quotes are not a mistake: https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/issues/615
+	else
+		echo "Found a VirtualSink re-using it."
 	fi
-
 	# Move selected playback onto virtual sink
 	SINK_INPUTS=`pacmd list-sink-inputs | tr '\n' '\r' | perl -pe 's/ *index: ([0-9]+).+?application\.name = "([^\r]+)"\r.+?(?=index:|$)/\2:\1\r/g' | tr '\r' '\n'` # Display indexes
 	echo "$SINK_INPUTS"
 
-	read -r -p "Select which windows to route:" ROUTED_SINKS
+	read -r -p "Select which window(s) to route (Space separated list e.g.:3 5):" ROUTED_SINKS
 	IFS=' ' read -ra ROUTED_SINKS_ARRAY <<< "$ROUTED_SINKS"
 	for sink in "${ROUTED_SINKS_ARRAY[@]}"
 	do
@@ -145,7 +147,7 @@ then
 	SOURCES=`pacmd list-sources | tr '\n' '\r' | perl -pe 's/ *index: ([0-9]+).+?device\.description = "([^\r]+)"\r.+?(?=index:|$)/\2:\1\r/g' | tr '\r' '\n'` # Display indexes
 	echo "$SOURCES"
 
-	read -r -p "Select which sources to route:" ROUTED_SOURCES
+	read -r -p "Select which source(s) to route (Space separated list e.g.:3 5):" ROUTED_SOURCES
 	IFS=' ' read -ra ROUTED_SOURCES_ARRAY <<< "$ROUTED_SOURCES"
 	for source in "${ROUTED_SOURCES_ARRAY[@]}"
 	do
