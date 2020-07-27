@@ -3,7 +3,7 @@
 set -o pipefail
 set -o nounset
 
-# Variables
+# Default variables
 FPS=60
 DEVICE_NUMBER=50
 MONITOR_NUMBER=
@@ -77,7 +77,7 @@ then
 fi
 
 # Reload v4l2loopback if device doesn't exist
-if ! [ -f /dev/video"$DEVICE_NUMBER" ]
+if [ ! -c /dev/video"$DEVICE_NUMBER" ]
 then
 	# Unload v4l2loopback module
 	if ! $(sudo modprobe -r v4l2loopback &> /dev/null)
