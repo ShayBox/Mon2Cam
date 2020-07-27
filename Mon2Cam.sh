@@ -134,7 +134,11 @@ then
 	IFS=' ' read -ra ROUTED_SINKS_ARRAY <<< "$ROUTED_SINKS"
 	for sink in "${ROUTED_SINKS_ARRAY[@]}"
 	do
-		pacmd move-sink-input $sink "VirtualSink"
+		if [ -n "`pacmd move-sink-input $sink \"VirtualSink\"`" ]
+		then
+			echo "Error encountered while trying to move sink input. Check if you entered a correct id or correct ids."
+			exit 1
+		fi
 	done
 
 	# Move selected microphone input to the virtual sink
@@ -145,7 +149,11 @@ then
 	IFS=' ' read -ra ROUTED_SOURCES_ARRAY <<< "$ROUTED_SOURCES"
 	for source in "${ROUTED_SOURCES_ARRAY[@]}"
 	do
-		pactl load-module module-loopback source=$source sink="$VIRTUAL_SINK">/dev/null
+		if [ -n "`(pactl load-module module-loopback source=$source sink=\"$VIRTUAL_SINK\" 1>/dev/null) 2>&1`" ]
+		then
+			echo "Error encountered while trying to move microphone into the virtual sink. Check if you entered a correct id or correct ids."
+			exit 1
+		fi
 	done
 fi
 
