@@ -10,6 +10,7 @@ MONITOR_NUMBER=
 FFMPEG_OPTIONS=
 BORDER=false
 SOUND=false
+OUTPUT=/dev/null
 
 # Options
 while [ ! $# -eq 0 ]
@@ -30,6 +31,7 @@ do
 			echo "-hf, --horizontal-flip    horizontally flip the monitor capture"
 			echo "-b,  --border             add border when scaling to avoid stretching"
 			echo "-s,  --sound              create virtual sink and route sound into it (requires pulseaudio)"
+			echo "-v,  --verbose            Show verbose output"
 			exit
 		;;
 		-f | --framerate)
@@ -57,6 +59,9 @@ do
 		-s | --sound)
 			SOUND=true
 		;;
+		-v | --verbose)
+            OUTPUT=/dev/tty
+        ;;
 	esac
 	shift
 done
@@ -177,4 +182,4 @@ $FFMPEG \
 	$FFMPEG_OPTIONS \
 	-pix_fmt yuv420p \
 	-f v4l2 \
-	/dev/video"$DEVICE_NUMBER" &> /dev/null
+	/dev/video"$DEVICE_NUMBER"  &> $OUTPUT
