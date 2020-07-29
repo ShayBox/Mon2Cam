@@ -112,22 +112,47 @@ then
 fi
 
 # AUDIO
-if [ "$SOUND" = true ]
-then
-	VIRTUAL_SINK="VirtualSink"
-	VIRTUAL_SINK_DESCRIPTION="Mon2Cam Sink"
 
-	# Create virtual sink if not already present
+### $1: VIRTUAL_SINK
+### $2: VIRTUAL_SINK_DESCRIPTION
+create_sink_if_not_present() {
+	VIRTUAL_SINK=$1
+	VIRTUAL_SINK_DESCRIPTION=$2
 	GREP_VIRTUAL_SINK=`pacmd list-sinks | grep "$VIRTUAL_SINK_DESCRIPTION"`
 	if [ -z "$GREP_VIRTUAL_SINK" ]
 	then
 		VIRTUAL_SINK_INDEX=`pactl load-module module-null-sink sink_name=$VIRTUAL_SINK`
 		echo "Created VirtualSink with index: $VIRTUAL_SINK_INDEX"
 		pacmd "update-sink-proplist "$VIRTUAL_SINK" device.description='$VIRTUAL_SINK_DESCRIPTION'"
-		pacmd "update-source-proplist VirtualSink.monitor device.description=\"Monitor of Mon2Cam Sink\"" # The double-escaped quotes are not a mistake: https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/issues/615
+		pacmd "update-source-proplist $VIRTUAL_SINK.monitor device.description=\"Monitor of $VIRTUAL_SINK_DESCRIPTION\"" # The double-escaped quotes are not a mistake: https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/issues/615
 	else
-		echo "Found a VirtualSink re-using it."
+		echo "Found a $VIRTUAL_SINK re-using it."
 	fi
+}
+
+
+if [ "$SOUND" = true ]
+then
+	
+	# VS_APP Is responsible for combining the sound of the applications. Both the host and the client will hear this.
+	VS_APP="VirtualSinkAPP"
+	VS_APP_DESCRIPTION="Mon2Cam application sink"
+
+	# VS_MIC Is responsible for combining the devices that only the client will hear. (Mainly microphones)
+	VS_MIC="VirtualSinkMIC"
+	VS_MIC_DESCRIPTION="Mon2Cam microphone sink"
+
+	# Create virtual sinks if not already present
+	create_sink_if_not_present "$VS_APP" "$VS_APP_DESCRIPTION"
+	create_sink_if_not_present "$VS_MIC" "$VS_MIC_DESCRIPTION"
+
+	# Loop the application virtual sink back to the user so he can hear it too.
+	# Also loop the application virtual sink to the microphone virtual sink
+	# TODO: Detect if this module is already created and reuse it
+	#(pactl load-module module-loopback source="$VS_APP.monitor" 1>/dev/null) 2>&1
+	(pactl load-module module-loopback source="$VS_APP.monitor" 1>/dev/null) 2>&1
+	(pactl load-module module-loopback source="$VS_APP.monitor" sink=$VS_MIC 1>/dev/null) 2>&1
+
 	# Move selected playback onto virtual sink
 	SINK_INPUTS=`pacmd list-sink-inputs | tr '\n' '\r' | perl -pe 's/ *index: ([0-9]+).+?application\.name = "([^\r]+)"\r.+?(?=index:|$)/\2:\1\r/g' | tr '\r' '\n'` # Display indexes
 	echo "$SINK_INPUTS"
@@ -136,7 +161,8 @@ then
 	IFS=' ' read -ra ROUTED_SINKS_ARRAY <<< "$ROUTED_SINKS"
 	for sink in "${ROUTED_SINKS_ARRAY[@]}"
 	do
-		if [ -n "`pacmd move-sink-input $sink \"VirtualSink\"`" ]
+		# TODO: Remove hardcoded string (VirtualSinkAPP). For some reason I couldn't get this to work without this. Need to investigate later.
+		if [ -n "`pacmd move-sink-input $sink \"VirtualSinkAPP\"`" ]
 		then
 			echo "Error encountered while trying to move sink input. Check if you entered a correct id or correct ids."
 			exit 1
@@ -151,7 +177,8 @@ then
 	IFS=' ' read -ra ROUTED_SOURCES_ARRAY <<< "$ROUTED_SOURCES"
 	for source in "${ROUTED_SOURCES_ARRAY[@]}"
 	do
-		if [ -n "`(pactl load-module module-loopback source=$source sink=\"$VIRTUAL_SINK\" 1>/dev/null) 2>&1`" ]
+		# TODO: Detect if this module is already created and reuse it
+		if [ -n "`(pactl load-module module-loopback source=$source sink=\"$VS_MIC\" 1>/dev/null) 2>&1`" ]
 		then
 			echo "Error encountered while trying to move microphone into the virtual sink. Check if you entered a correct id or correct ids."
 			exit 1
