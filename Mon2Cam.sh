@@ -139,7 +139,7 @@ fi
 
 # Pick monitor
 # if recording a Wayland session, wf-recorder can prompt the user itself
-if [ "$WAYLAND" = false ] -a [ -z "$MONITOR_ID" ]
+if [ "$WAYLAND" = false ] && [ -z "$MONITOR_ID" ]
 then
   $XRANDR --listactivemonitors
   read -r -p "Which monitor: " MONITOR_ID
@@ -252,5 +252,9 @@ then
 		/dev/video"$DEVICE_NUMBER" &> $OUTPUT
 else
   # with wf-recorder, it is not necessary to know the resolution and position
-  $WFRECORDER -x yuv420p -c rawvideo -m v4l2 -f /dev/video"$DEVICE_NUMBER" &>/dev/null
+  # stdout must still go to screen to prompt user output selection
+  $WFRECORDER -x yuv420p \
+    -c rawvideo \
+    -m v4l2 \
+    -f /dev/video"$DEVICE_NUMBER"
 fi
