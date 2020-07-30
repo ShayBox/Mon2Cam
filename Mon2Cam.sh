@@ -144,17 +144,10 @@ then
 fi
 
 # Pick monitor
-if [ -z "$MONITOR_ID" ]
+# if recording a Wayland session, wf-recorder can prompt the user itself
+if [ [ "$WAYLAND" = false ] -a [ -z "$MONITOR_ID" ] ]
 then
-	if [ "$WAYLAND" = true ]
-	then
-		# swaymsg would be more ideal but is specific to sway
-		# parsing the output of wlr-randr works but is not ideal
-		# this will show the current display resolution, position, ID, and name
-		$WLRRANDR | egrep '(current|Position|")'
-	else
-		$XRANDR --listactivemonitors
-	fi
+  $XRANDR --listactivemonitors
 	read -r -p "Which monitor: " MONITOR_ID
 fi
 
@@ -206,12 +199,12 @@ do
 done
 fi
 
-# Use x11grab to stream screen into v4l2loopback device
 echo "CTRL + C to stop"
 echo "Your screen will look mirrored for you, not others"
 
-if ! [ "$WAYLAND" = true ]
+if [ "$WAYLAND" = false ]
 then
+  # Use x11grab to stream screen into v4l2loopback device
 	# Monitor information
 	MONITOR_INFO=$(xrandr --listactivemonitors | grep "$MONITOR_ID:" | cut -f4 -d' ')
 	MONITOR_HEIGHT=$(echo "$MONITOR_INFO" | cut -f2 -d'/' | cut -f2 -d'x')
@@ -230,5 +223,5 @@ then
 		/dev/video"$DEVICE_NUMBER" &> $OUTPUT
 else
 	# with wf-recorder, it is not necessary to know the resolution and position
-	$WFRECORDER -o $MONITOR_ID -x yuv420p -c rawvideo -m v4l2 -f /dev/video"$DEVICE_NUMBER" &>/dev/null
+	$WFRECORDER -x yuv420p -c rawvideo -m v4l2 -f /dev/video"$DEVICE_NUMBER" &>/dev/null
 fi
