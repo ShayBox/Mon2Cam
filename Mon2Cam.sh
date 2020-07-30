@@ -77,6 +77,10 @@ if [ -x "$XISXWAYLAND" ]
 then
 	# if X is actually Xwayland, then use wf-recorder instead
 	WAYLAND=$($XISXWAYLAND && echo true)
+elif [ -v WAYLAND_DISPLAY ]
+then
+  # alternative check, if WAYLAND_DISPLAY is set then enable support
+  WAYLAND=true
 fi
 
 # dependency checking for wayland recording, if enabled
@@ -110,7 +114,6 @@ then
 	echo "Error: ffmpeg is not installed."
 	exit 1
 fi
-
 
 # Reload v4l2loopback if device doesn't exist
 if [ ! -c /dev/video"$DEVICE_NUMBER" ]
@@ -203,9 +206,9 @@ do
 done
 fi
 
-	# Use x11grab to stream screen into v4l2loopback device
-	echo "CTRL + C to stop"
-	echo "Your screen will look mirrored for you, not others"
+# Use x11grab to stream screen into v4l2loopback device
+echo "CTRL + C to stop"
+echo "Your screen will look mirrored for you, not others"
 
 if ! [ "$WAYLAND" = true ]
 then
