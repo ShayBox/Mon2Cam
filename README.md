@@ -3,39 +3,43 @@ Fix for multi-monitor Discord screensharing
 
 Dependencies:
 -
-- xrandr
-- ffmpeg
-- v4l2loopback 0.12+
+- [Deno]
+- [xrandr]
+- [ffmpeg]
+- [v4l2loopback] 0.12+
 
 Note:
 Ubuntu 18.04 and below does not provide v4l2loopback 0.12, if you use older versions of Ubuntu you will need to [compile from source](https://github.com/umlaeute/v4l2loopback#install)
 
 Instructions:
 -
-- Install dependencies
+- Install [Deno]
+- Install [dependencies](#dependencies)
 - Download `Mon2Cam.sh`
-- Run `chmod +x Mon2Cam.sh`
-- Run `./Mon2Cam.sh`
-- Follow prompt
-- Switch discord webcam to "Mon2Cam" (Must be running)
+- Allow execution `chmod +x Mon2Cam.sh`
+- Execute `./Mon2Cam.sh`
+- Switch discord webcam
 
 Or use the [AUR package](https://aur.archlinux.org/packages/mon2cam-git/)
 
 ```
-./Mon2Cam.sh - Monitor to Camera
+Mon2Cam - Monitor 2 Camera
 
-./Mon2Cam.sh [options] [value]
+Mon2Cam [options] [value]
 
 options:
--h,  --help               show help
--f,  --framerate=FPS      set framerate
--d,  --device-number=NUM  set device number
--m,  --monitor-number=NUM set monitor number
--vf, --vertical-flip      vertically flip the monitor capture
--hf, --horizontal-flip    horizontally flip the monitor capture
--r,  --resolution W:H     manually set output resolution
--b,  --border             add border when scaling to avoid stretching
--s,  --sound              create virtual sink and route sound into it (requires pulseaudio)
+-h,  --help,       Show help
+-f,  --framerate,  Set framerate
+-d,  --device,     Set device number
+-m,  --monitor,    Set monitor number
+-r,  --resolution, Set output resolution (W:H)
+-vf, --vflip,      Vertically flip the camera
+-hf, --hflip,      Horizontally flip the camera
+-b,  --border,     Add border when scaling to avoid stretching
+-s,  --sound,      Create virtual sink and route sound into it
+-v,  --verbose,    Show verbose output
+
+To find out more, visit https://github.com/shaybox/mon2cam
 ```
 
 ```
@@ -48,7 +52,7 @@ CTRL + C to stop
 Your screen will look mirrored for you, not others
 ```
 
-![Screenshot](Screenshot.png)
+![Screenshot](images/discord_webcam.png)
 
 
 Audio routing
@@ -60,8 +64,9 @@ To use, pass the `-s` option, select the appropriate applications and sources (Y
 
 Also **note** that in the current implementation, if you use this feature, you won't be able to hear the selected application(s), only the people listening to the stream. You can workaround this by using a command like: `ffplay -f pulse -i default -nodisp` and then changing the recorded source in *pavucontrol*, however you will also hear any inputs that you might have passed (so if you passed your microphone, you will hear yourself).
 
-![Screenshot_Pavucontrol](Screenshot_Pavucontrol.png)
+![Screenshot_Pavucontrol](images/pavucontrol.png)
 
-Note
--
-This is a continuation of [TaPO4eg3D/discord-monitors-to-vc](https://github.com/TaPO4eg3D/discord-monitors-to-vc) that uses pure bash instead of a mix of bash and python to remove the python dependency, it also adds dependency checking
+[Deno]:https://deno.land/
+[xrandr]:https://www.x.org/releases/X11R7.7/doc/man/man1/xrandr.1.xhtml
+[ffmpeg]:http://ffmpeg.org/
+[v4l2loopback]:https://github.com/umlaeute/v4l2loopback
