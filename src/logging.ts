@@ -13,7 +13,7 @@ enum LogType {
     Log
 }
 
-class Logger {
+export class Logger {
     verbosity: Verbosity;
 
     constructor(verbosity: Verbosity) {
@@ -35,5 +35,3 @@ class Logger {
     public debug(msg: string) : void {this.output(c.magenta.text("DEBUG") + c.reset.text(" ") + msg, LogType.Debug);}
     public log(msg: string) : void {this.output(msg, LogType.Log);}
 }
-
-export {Logger}
