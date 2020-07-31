@@ -1,5 +1,4 @@
-import { parse } from "https://deno.land/std@0.62.0/flags/mod.ts";
-import { OutputMode } from "https://deno.land/x/exec@0.0.5/mod.ts";
+import { parse, OutputMode } from "./deps.ts";
 
 interface Options {
 	framerate: number;
