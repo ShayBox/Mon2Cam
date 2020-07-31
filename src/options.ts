@@ -1,4 +1,5 @@
 import { parse, OutputMode } from "./deps.ts";
+import { Verbosity } from "./logging.ts";
 
 interface Options {
 	framerate: number;
@@ -8,6 +9,7 @@ interface Options {
 	border: boolean;
 	sound: boolean;
 	output: OutputMode;
+	verbosity: Verbosity;
 }
 
 export function parseOptions(args: string[]): Options {
@@ -58,6 +60,7 @@ export function parseOptions(args: string[]): Options {
 		border: false,
 		sound: false,
 		output: OutputMode.Capture,
+		verbosity: Verbosity.Default
 	};
 
 	if (typeof p.framerate === "number") options.framerate = p.framerate;
@@ -70,7 +73,10 @@ export function parseOptions(args: string[]): Options {
 	if (typeof p.hflip === "boolean") options.ffmpeg.push("-vf hflip");
 	if (typeof p.border === "boolean") options.border = p.border;
 	if (typeof p.sound === "boolean") options.sound = p.sound;
-	if (typeof p.verbose === "boolean") options.output = OutputMode.Tee;
+	if (typeof p.verbose === "boolean") {
+		options.output = OutputMode.Tee;
+		options.verbosity = Verbosity.Verbose;
+	}
 
 	return options;
 }
