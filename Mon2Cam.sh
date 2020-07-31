@@ -12,63 +12,64 @@ BORDER=false
 SOUND=false
 OUTPUT=/dev/null
 WAYLAND=false
+FORCE_X11=false
 
 # Options
 while [ ! $# -eq 0 ]
 do
-  case "$1" in
-    -h | --help)
-      echo "$0 - Monitor to Camera"
-      echo ""
-      echo "$0 [options] [value]"
-      echo ""
-      echo "options:"
-      echo "-h, --help               show help"
-      echo "-f, --framerate FPS     set framerate"
-      echo "-d, --device-number NUM set device number"
-      echo "-m, --monitor-id NUM     set monitor id"
-      echo "-r, --resolution W:H     manually set output resolution"
-      echo "-vf, --vertical-flip      vertically flip the monitor capture"
-      echo "-hf, --horizontal-flip    horizontally flip the monitor capture"
-      echo "-b, --border             add border when scaling to avoid stretching"
-      echo "-s, --sound             create virtual sink and route sound into it (requires pulseaudio)"
-      echo "-v, --verbose           Show verbose output"
-      echo "-w, --wayland           enable support for Wayland sessions using wf-recorder"
-      exit
-    ;;
-    -f | --framerate)
-      FPS=$2
-    ;;
-    -d | --device-number)
-      DEVICE_NUMBER=$2
-    ;;
-    -m | --monitor-id)
-      MONITOR_ID=$2
-    ;;
-    -r | --resolution)
-      FFMPEG_OPTIONS+="-vf scale=$2"
-      RESOLUTION=$2
-    ;;
-    -vf | --vertical-flip)
-      FFMPEG_OPTIONS+="-vf vflip"
-    ;;
-    -hf | --horizontal-flip)
-      FFMPEG_OPTIONS+="-vf hflip"
-    ;;
-    -b | --border)
-      BORDER=true
-    ;;
-    -s | --sound)
-      SOUND=true
-    ;;
-    -v | --verbose)
-            OUTPUT=/dev/tty
-        ;;
-    -w | --wayland)
-      WAYLAND=true
-    ;;
-  esac
-  shift
+	case "$1" in
+		-h | --help)
+			echo "$0 - Monitor to Camera"
+			echo ""
+			echo "$0 [options] [value]"
+			echo ""
+			echo "options:"
+			echo "-h,  --help               show help"
+			echo "-f,  --framerate FPS      set framerate"
+			echo "-d,  --device-number NUM  set device number"
+			echo "-m,  --monitor-id NUM     set monitor id"
+			echo "-r,  --resolution W:H     manually set output resolution"
+			echo "-vf, --vertical-flip      vertically flip the monitor capture"
+			echo "-hf, --horizontal-flip    horizontally flip the monitor capture"
+			echo "-b,  --border             add border when scaling to avoid stretching"
+			echo "-s,  --sound              create virtual sink and route sound into it (requires pulseaudio)"
+			echo "-v,  --verbose            Show verbose output"
+      echo "-w,  --wayland            enable support for Wayland sessions using wf-recorder"
+			exit
+		;;
+		-f | --framerate)
+			FPS=$2
+		;;
+		-d | --device-number)
+			DEVICE_NUMBER=$2
+		;;
+		-m | --monitor-id)
+			MONITOR_ID=$2
+		;;
+		-r | --resolution)
+			FFMPEG_OPTIONS+="-vf scale=$2"
+			RESOLUTION=$2
+		;;
+		-vf | --vertical-flip)
+			FFMPEG_OPTIONS+="-vf vflip"
+		;;
+		-hf | --horizontal-flip)
+			FFMPEG_OPTIONS+="-vf hflip"
+		;;
+		-b | --border)
+			BORDER=true
+		;;
+		-s | --sound)
+			SOUND=true
+		;;
+		-v | --verbose)
+						OUTPUT=/dev/tty
+				;;
+		-w | --wayland)
+			WAYLAND=true
+		;;
+	esac
+	shift
 done
 
 # check for the `xisxwayland` tool and run it if it's found
@@ -81,6 +82,12 @@ elif [ -v WAYLAND_DISPLAY ]
 then
   # alternative check, if WAYLAND_DISPLAY is set then enable support
   WAYLAND=true
+fi
+
+# the flag to force x11 support disables wayland support
+if [ "$FORCE_X11" = true ]
+then
+  WAYLAND=false
 fi
 
 # dependency checking for wayland recording, if enabled
@@ -253,7 +260,14 @@ then
 else
   # with wf-recorder, it is not necessary to know the resolution and position
   # stdout must still go to screen to prompt user output selection
-  $WFRECORDER -x yuv420p \
+  if [ -n "$MONITOR_ID" ] # use pre-existing monitor selection is provided
+  then
+    WF_OUTPUT="-o $MONITOR_ID"
+  else
+    WF_OUTPUT=""
+  fi
+  $WFRECORDER $WF_OUTPUT \
+    -x yuv420p \
     -c rawvideo \
     -m v4l2 \
     -f /dev/video"$DEVICE_NUMBER"
