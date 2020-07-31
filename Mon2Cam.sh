@@ -198,41 +198,6 @@ do
     exit 1
   fi
 done
-=======
-  VIRTUAL_SINK="VirtualSink"
-  VIRTUAL_SINK_DESCRIPTION="Mon2Cam Sink"
-
-  # Create virtual sink if not already present
-  GREP_VIRTUAL_SINK=`pacmd list-sinks | grep "$VIRTUAL_SINK_DESCRIPTION"`
-  if [ -z "$GREP_VIRTUAL_SINK" ]
-  then
-    VIRTUAL_SINK_INDEX=`pactl load-module module-null-sink sink_name=$VIRTUAL_SINK`
-    echo "Created VirtualSink with index: $VIRTUAL_SINK_INDEX"
-    pacmd "update-sink-proplist "$VIRTUAL_SINK" device.description='$VIRTUAL_SINK_DESCRIPTION'"
-  fi
-
-  # Move selected playback onto virtual sink
-  SINK_INPUTS=`pacmd list-sink-inputs | tr '\n' '\r' | perl -pe 's/ *index: ([0-9]+).+?application\.name = "([^\r]+)"\r.+?(?=index:|$)/\2:\1\r/g' | tr '\r' '\n'` # Display indexes
-  echo "$SINK_INPUTS"
-
-  read -r -p "Select which windows to route:" ROUTED_SINKS
-  IFS=' ' read -ra ROUTED_SINKS_ARRAY <<< "$ROUTED_SINKS"
-  for sink in "${ROUTED_SINKS_ARRAY[@]}"
-  do
-    pacmd move-sink-input $sink "VirtualSink"
-  done
-
-  # Move selected microphone input to the virtual sink
-  SOURCES=`pacmd list-sources | tr '\n' '\r' | perl -pe 's/ *index: ([0-9]+).+?device\.description = "([^\r]+)"\r.+?(?=index:|$)/\2:\1\r/g' | tr '\r' '\n'` # Display indexes
-  echo "$SOURCES"
-
-  read -r -p "Select which sources to route:" ROUTED_SOURCES
-  IFS=' ' read -ra ROUTED_SOURCES_ARRAY <<< "$ROUTED_SOURCES"
-  for source in "${ROUTED_SOURCES_ARRAY[@]}"
-  do
-    pactl load-module module-loopback source=$source sink="$VIRTUAL_SINK">/dev/null
-  done
->>>>>>> ffb9dba... Remove dependency check for wlr-randr and fix broken conditional.
 fi
 
 echo "CTRL + C to stop"
