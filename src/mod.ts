@@ -1,7 +1,8 @@
-import { exec, OutputMode } from "https://deno.land/x/exec@0.0.5/mod.ts";
-import { readStdin } from "./utility.ts";
+import { exec } from "https://deno.land/x/exec@0.0.5/mod.ts";
 import Logger from "./logging.ts";
 import Options from "./options.ts";
+import startWayland from "./x11.ts";
+import startX11 from "./x11.ts";
 
 const options = new Options(Deno.args);
 const logger = new Logger(options.verbosity);
@@ -21,19 +22,5 @@ if (options.sound) {
 	// enableSound();
 }
 
-if (options.wayland) {
-	// Wayland
-} else {
-	if (typeof options.monitor !== "number") {
-		await exec("xrandr --listactivemonitors");
-		logger.log("Which monitor:");
-
-		const monitor = parseInt(await readStdin(), 10);
-		if (monitor === NaN) {
-			logger.error("Invalid input");
-			Deno.exit(1);
-		}
-
-		options.monitor = monitor;
-	}
-}
+if (options.wayland) startWayland(options, logger);
+else startX11(options, logger);
