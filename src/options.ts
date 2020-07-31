@@ -1,7 +1,7 @@
 import { parse, OutputMode } from "./deps.ts";
 import { Verbosity } from "./logging.ts";
 
-interface Options {
+export interface Options {
 	framerate: number;
 	device: number;
 	monitor?: number;
