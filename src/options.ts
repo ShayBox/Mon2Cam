@@ -1,4 +1,4 @@
-import { OutputMode } from "https://deno.land/x/exec@0.0.5/mod.ts";
+import { OutputMode, IOptions } from "./exec.ts";
 import { parse } from "https://deno.land/std@0.62.0/flags/mod.ts";
 import { Verbosity } from "./logging.ts";
 
@@ -10,7 +10,7 @@ export default class Options {
 	public border: boolean = false;
 	public sound: boolean = false;
 	public wayland: boolean = false;
-	public execOptions: { output: OutputMode; verbose: boolean } = { output: OutputMode.Capture, verbose: false };
+	public execOptions: IOptions = { output: OutputMode.Capture, verbose: false };
 	public verbosity: Verbosity = Verbosity.Default;
 
 	constructor(args: string[]) {
