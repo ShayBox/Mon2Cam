@@ -1,25 +1,26 @@
-import { Options } from "./options.ts";
-import { readStdin, exec } from "./deps.ts";
-import { Logger } from "./logging.ts"
+import { exec } from "https://deno.land/x/exec@0.0.5/mod.ts";
+import Logger from "./logging.ts";
+import Options from "./options.ts";
+import startWayland from "./x11.ts";
+import startX11 from "./x11.ts";
 
-export default async function(logger:Logger, options:Options) {
-	await Deno.stat("/dev/video" + options.device).catch(async (error) => {
-		if (error instanceof Deno.errors.NotFound) {
-			await exec("sudo modprobe -r v4l2loopback");
-			await exec(`sudo modprobe v4l2loopback video_nr=${options.device} 'card_label=Mon2Cam'`);
-		} else logger.error(error);
-	});
-	
-	if (!options.monitor) {
-		await exec("xrandr --listactivemonitors");
-		logger.log("Which monitor:");
-	
-		const monitor = parseInt(await readStdin(), 10);
-		if (monitor === NaN) {
-			logger.error("Invalid input");
-			Deno.exit(1);
-		}
-	
-		options.monitor = monitor;
-	}
+const options = new Options(Deno.args);
+const logger = new Logger(options.verbosity);
+
+await Deno.stat("/dev/video" + options.device).catch(async (error) => {
+	if (error instanceof Deno.errors.NotFound) {
+		await exec("sudo modprobe -r v4l2loopback", options.execOptions);
+		await exec(`sudo modprobe v4l2loopback video_nr=${options.device} 'card_label=Mon2Cam'`, options.execOptions);
+	} else logger.error(error);
+});
+
+if (options.border) {
+	// enableBorder();
 }
+
+if (options.sound) {
+	// enableSound();
+}
+
+if (options.wayland) startWayland(options, logger);
+else startX11(options, logger);
