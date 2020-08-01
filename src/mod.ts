@@ -14,7 +14,6 @@ await Deno.stat("/dev/video" + options.device).catch(async (error) => {
 	} else logger.error(error);
 });
 
-// if (options.border) enableBorder();
-// if (options.sound) enableSound();
+// if (options.sound) startSound();
 if (options.wayland) startWayland(options, logger);
 else startX11(options, logger);
