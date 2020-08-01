@@ -1,6 +1,5 @@
 import { OutputMode, IOptions } from "./exec.ts";
 import { parse } from "https://deno.land/std@0.62.0/flags/mod.ts";
-import { Verbosity } from "./logging.ts";
 
 export default class Options {
 	public framerate: number = 60;
@@ -10,8 +9,8 @@ export default class Options {
 	public border: boolean = false;
 	public sound: boolean = false;
 	public wayland: boolean = false;
-	public execOptions: IOptions = { output: OutputMode.Capture, verbose: false };
-	public verbosity: Verbosity = Verbosity.Default;
+	public verbose: boolean = false;
+	public output: OutputMode = OutputMode.Capture;
 
 	constructor(args: string[]) {
 		const alias = {
@@ -63,8 +62,8 @@ export default class Options {
 		if (typeof p.border === "boolean") this.border = p.border;
 		if (typeof p.sound === "boolean") this.sound = p.sound;
 		if (typeof p.verbose === "boolean") {
-			this.verbosity = Verbosity.Verbose;
-			this.execOptions = { output: OutputMode.Tee, verbose: true };
+			this.verbose = true;
+			this.output = OutputMode.Tee;
 		}
 	}
 }

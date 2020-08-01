@@ -19,9 +19,9 @@ function splitCommand(command: string): string[] {
 
 export enum OutputMode {
 	None = 0, // no output, just run the command
-	StdOut, // dump the output to stdout
-	Capture, // capture the output and return it
-	Tee, // both dump and capture the output
+	StdOut = 1, // dump the output to stdout
+	Capture = 2, // capture the output and return it
+	Tee = 3, // both dump and capture the output
 }
 
 export interface IExecStatus {
@@ -42,7 +42,7 @@ export interface IOptions {
 
 export const exec = async (
 	command: string,
-	options: IOptions = { output: OutputMode.StdOut, verbose: false }
+	options: IOptions = { output: OutputMode.Tee, verbose: false }
 ): Promise<IExecResponse> => {
 	let splits = splitCommand(command);
 

@@ -1,30 +1,41 @@
 import c from "https://deno.land/x/color/index.ts";
 
-export enum Verbosity {
-	Default,
-	Verbose,
-}
-
 export enum LogType {
-	Info,
-	Warning,
-	Error,
 	Debug,
+	Error,
+	Info,
 	Log,
+	Panic,
+	Warning,
 }
 
 export default class Logger {
-	verbosity: Verbosity;
+	private verbose: boolean;
 
-	constructor(verbosity: Verbosity) {
-		this.verbosity = verbosity;
+	constructor(verbose: boolean) {
+		this.verbose = verbose;
 	}
 
 	output(msg: string, type: LogType): void {
-		if (this.verbosity == Verbosity.Verbose && type == LogType.Debug) {
-			console.log(msg);
-		} else if (type != LogType.Debug) {
-			console.log(msg);
+		switch (type) {
+			case LogType.Debug: {
+				if (!this.verbose) break;
+			}
+			case LogType.Info:
+				console.info(msg);
+				break;
+
+			case LogType.Log:
+				console.log(msg);
+				break;
+
+			case LogType.Warning:
+				console.warn(msg);
+				break;
+
+			case LogType.Error:
+			case LogType.Panic:
+				console.error(msg);
 		}
 	}
 
@@ -42,5 +53,9 @@ export default class Logger {
 	}
 	public log(msg: string): void {
 		this.output(msg, LogType.Log);
+	}
+	public panic(msg: string, code?: number): void {
+		this.output(c.red.text("PANIC") + c.reset.text(" ") + msg, LogType.Panic);
+		Deno.exit(code || 1);
 	}
 }
