@@ -1,8 +1,8 @@
-import { exec } from "./exec.ts";
+import { exec } from "./libraries/exec.ts";
 import Logger from "./logging.ts";
 import Options from "./options.ts";
-import startWayland from "./x11.ts";
-import startX11 from "./x11.ts";
+import startWayland from "./backends/x11.ts";
+import startX11 from "./backends/x11.ts";
 
 const options = new Options(Deno.args);
 const logger = new Logger(options.verbose);
@@ -15,5 +15,8 @@ await Deno.stat("/dev/video" + options.device).catch(async (error) => {
 });
 
 // if (options.sound) startSound();
-if (options.wayland) startWayland(options, logger);
-else startX11(options, logger);
+if (options.wayland) {
+	await startWayland(options, logger);
+} else {
+	await startX11(options, logger);
+}

@@ -1,4 +1,4 @@
-import c from "https://deno.land/x/color/index.ts";
+import c from "./libraries/color.ts";
 
 export enum LogType {
 	Debug,
@@ -40,22 +40,22 @@ export default class Logger {
 	}
 
 	public info(msg: string): void {
-		this.output(c.blue.text("INFO") + c.reset.text(" ") + msg, LogType.Info);
+		this.output(c.blue + "INFO" + c.reset + msg, LogType.Info);
 	}
 	public warn(msg: string): void {
-		this.output(c.yellow.text("WARN") + c.reset.text(" ") + msg, LogType.Warning);
+		this.output(c.yellow + "WARN" + c.reset + msg, LogType.Warning);
 	}
 	public error(msg: string): void {
-		this.output(c.red.text("ERROR") + c.reset.text(" ") + msg, LogType.Error);
+		this.output(c.red + "ERROR" + c.reset + msg, LogType.Error);
 	}
 	public debug(msg: string): void {
-		this.output(c.magenta.text("DEBUG") + c.reset.text(" ") + msg, LogType.Debug);
+		this.output(c.magenta + "DEBUG" + c.reset + msg, LogType.Debug);
 	}
 	public log(msg: string): void {
 		this.output(msg, LogType.Log);
 	}
 	public panic(msg: string, code?: number): void {
-		this.output(c.red.text("PANIC") + c.reset.text(" ") + msg, LogType.Panic);
+		this.output(c.red + "PANIC" + c.reset + msg, LogType.Panic);
 		Deno.exit(code || 1);
 	}
 }

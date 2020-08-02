@@ -1,7 +1,8 @@
-import { exec, OutputMode } from "./exec.ts";
-import { readStdin, checkDependency } from "./utility.ts";
-import Logger from "./logging.ts";
-import Options from "./options.ts";
+import { exec } from "../libraries/exec.ts";
+import { readStdin, checkDependency } from "../utility.ts";
+import c from "../libraries/color.ts";
+import Logger from "../logging.ts";
+import Options from "../options.ts";
 
 interface XMonitorInfo {
 	index: string;
@@ -37,18 +38,18 @@ export default async function (options: Options, logger: Logger) {
 		const monitors = lines.map((line) => getMonitorInfo(line));
 
 		for (const monitor of monitors) {
-			logger.log(`${monitor.index}: ${monitor.height}x${monitor.width}`);
+			logger.log(`${c.yellow}${monitor.index}${c.blue}: ${monitor.height}x${monitor.width}`);
 		}
-		logger.log("Which monitor?");
+		logger.log(c.yellow + "Which monitor?");
 
 		const monitor = parseInt(await readStdin(), 10);
 		if (isNaN(monitor)) {
-			logger.panic("Input not a number");
+			logger.panic(c.red + "Input not a number");
 		}
 
 		const monitorCount = output.split("\n").length - 2;
 		if (monitor < 0 || monitor > monitorCount) {
-			logger.panic("Input not a monitor");
+			logger.panic(c.red + "Input not a monitor");
 		}
 
 		options.monitor = monitor;
@@ -57,12 +58,12 @@ export default async function (options: Options, logger: Logger) {
 	const monitor = getMonitorInfo(lines[options.monitor]);
 	const display = Deno.env.get("DISPLAY");
 	if (!display) {
-		logger.panic("Display env variable not defined, are you even using X?");
+		logger.panic(c.red + "Display env variable not defined, are you even using X?");
 		return;
 	}
 
-	logger.info("CTRL + C to stop");
-	logger.info("The screen will look mirrored for you, not others");
+	logger.log(c.blue + "CTRL + C to stop");
+	logger.log(c.blue + "The screen will look mirrored for you, not others");
 
 	const commandLines = [
 		"ffmpeg",
