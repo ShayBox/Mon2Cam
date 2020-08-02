@@ -3,13 +3,43 @@ import { readStdin, checkDependency } from "./utility.ts";
 import Logger from "./logging.ts";
 import Options from "./options.ts";
 
+interface XMonitorInfo {
+	index: string;
+	height: string;
+	width: string;
+	x: string;
+	y: string;
+}
+
+function getMonitorInfo(xrandr: string): XMonitorInfo {
+	const regexGroups = /([\d]+): \+[\*]?[\d\w\-]+ ([\d]+)\/([\d]+)x([\d]+)\/([\d]+)\+([\d]+)\+([\d]+)/.exec(xrandr);
+	if (!regexGroups || regexGroups.length < 7) {
+		throw new Error("Xrandr output has changed and this code needs updated");
+	}
+
+	return {
+		index: regexGroups[1],
+		height: regexGroups[4],
+		width: regexGroups[2],
+		x: regexGroups[6],
+		y: regexGroups[7],
+	};
+}
+
 export default async function (options: Options, logger: Logger) {
 	await checkDependency("xrandr");
 	await checkDependency("ffmpeg");
 
-	if (typeof options.monitor !== "number") {
-		const { output } = await exec("xrandr --listactivemonitors");
-		logger.log("Which monitor:");
+	const { output } = await exec("xrandr --listactivemonitors", { output: 2 });
+	const lines = output.split("\n").slice(1);
+
+	if (!options.monitor) {
+		const monitors = lines.map((line) => getMonitorInfo(line));
+
+		for (const monitor of monitors) {
+			logger.log(`${monitor.index}: ${monitor.height}x${monitor.width}`);
+		}
+		logger.log("Which monitor?");
 
 		const monitor = parseInt(await readStdin(), 10);
 		if (isNaN(monitor)) {
@@ -24,20 +54,7 @@ export default async function (options: Options, logger: Logger) {
 		options.monitor = monitor;
 	}
 
-	const { output } = await exec("xrandr --listactivemonitors", { output: 2 });
-	const monitorLine = output.split("\n")[options.monitor + 1];
-	const monitorInfo = monitorLine.trim().split(" ")[2];
-	const regexGroups = /([0-9]+)\/([0-9]+)x([0-9]+)\/([0-9]+)\+([0-9]+)\+([0-9]+)/.exec(monitorInfo);
-	if (!regexGroups || regexGroups.length < 7) {
-		logger.panic("Xrandr output has changed and this code needs updated");
-		return;
-	}
-
-	const monitorWidth = regexGroups[1];
-	const monitorHeight = regexGroups[3];
-	const monitorX = regexGroups[5];
-	const monitorY = regexGroups[6];
-
+	const monitor = getMonitorInfo(lines[options.monitor]);
 	const display = Deno.env.get("DISPLAY");
 	if (!display) {
 		logger.panic("Display env variable not defined, are you even using X?");
@@ -51,8 +68,8 @@ export default async function (options: Options, logger: Logger) {
 		"ffmpeg",
 		"-f x11grab",
 		`-r ${options.framerate}`,
-		`-s ${monitorWidth}x${monitorHeight}`,
-		`-i ${display}+${monitorX},${monitorY}`,
+		`-s ${monitor.width}x${monitor.height}`,
+		`-i ${display}+${monitor.x},${monitor.y}`,
 		...options.ffmpeg,
 		"-pix_fmt yuv420p",
 		"-f v4l2",
