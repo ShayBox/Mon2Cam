@@ -20,8 +20,8 @@ function getMonitorInfo(xrandr: string): XMonitorInfo {
 
 	return {
 		index: regexGroups[1],
-		height: regexGroups[4],
-		width: regexGroups[2],
+		height: regexGroups[2],
+		width: regexGroups[4],
 		x: regexGroups[6],
 		y: regexGroups[7],
 	};
@@ -38,18 +38,18 @@ export default async function (options: Options, logger: Logger) {
 		const monitors = lines.map((line) => getMonitorInfo(line));
 
 		for (const monitor of monitors) {
-			logger.log(`${c.yellow}${monitor.index}${c.blue}: ${monitor.height}x${monitor.width}`);
+			logger.log(`${c.yellow}${monitor.index}:${c.reset} ${monitor.height}x${monitor.width}`);
 		}
-		logger.log(c.yellow + "Which monitor?");
+		logger.log("Which monitor?", c.yellow);
 
 		const monitor = parseInt(await readStdin(), 10);
 		if (isNaN(monitor)) {
-			logger.panic(c.red + "Input not a number");
+			logger.panic("Input not a number");
 		}
 
 		const monitorCount = output.split("\n").length - 2;
 		if (monitor < 0 || monitor > monitorCount) {
-			logger.panic(c.red + "Input not a monitor");
+			logger.panic("Input not a monitor");
 		}
 
 		options.monitor = monitor;
@@ -58,12 +58,12 @@ export default async function (options: Options, logger: Logger) {
 	const monitor = getMonitorInfo(lines[options.monitor]);
 	const display = Deno.env.get("DISPLAY");
 	if (!display) {
-		logger.panic(c.red + "Display env variable not defined, are you even using X?");
+		logger.panic("Display env variable not defined, are you even using X?");
 		return;
 	}
 
-	logger.log(c.blue + "CTRL + C to stop");
-	logger.log(c.blue + "The screen will look mirrored for you, not others");
+	logger.info("CTRL + C to stop");
+	logger.info("The screen will look mirrored for you, not others");
 
 	const commandLines = [
 		"ffmpeg",
