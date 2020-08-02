@@ -1,4 +1,4 @@
-import { exec, OutputMode } from "./exec.ts";
+import { exec } from "./libraries/exec.ts";
 
 export async function readStdin() {
 	const buffer = new Uint8Array(1024);
@@ -8,7 +8,7 @@ export async function readStdin() {
 }
 
 export async function checkDependency(command: string) {
-	await exec(command, { output: OutputMode.None }).catch((error) => {
+	await exec(command, { output: 0 }).catch((error) => {
 		if (error instanceof Deno.errors.NotFound) {
 			console.log(command + " not installed");
 		} else {
