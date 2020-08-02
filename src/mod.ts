@@ -3,6 +3,7 @@ import Logger from "./logging.ts";
 import Options from "./options.ts";
 import startWayland from "./x11.ts";
 import startX11 from "./x11.ts";
+import enableSound from "./audio.ts"
 
 const options = new Options(Deno.args);
 const logger = new Logger(options.verbose);
@@ -15,6 +16,6 @@ await Deno.stat("/dev/video" + options.device).catch(async (error) => {
 });
 
 // if (options.border) enableBorder();
-// if (options.sound) enableSound();
+if (options.sound) enableSound(options, logger);
 if (options.wayland) startWayland(options, logger);
 else startX11(options, logger);
