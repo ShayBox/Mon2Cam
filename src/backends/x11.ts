@@ -1,8 +1,7 @@
 import { exec } from "../libraries/exec.ts";
-import { readStdin, checkDependency } from "../utility.ts";
-import c from "../libraries/color.ts";
-import Logger from "../logging.ts";
-import Options from "../options.ts";
+import { readStdin, checkDependency } from "../libraries/utility.ts";
+import Logger, {colors as c} from "../libraries/logging.ts";
+import Options from "../libraries/options.ts";
 
 interface XMonitorInfo {
 	index: string;
@@ -36,7 +35,6 @@ export default async function (options: Options, logger: Logger) {
 
 	if (!options.monitor) {
 		const monitors = lines.map((line) => getMonitorInfo(line));
-
 		for (const monitor of monitors) {
 			logger.log(`${c.yellow}${monitor.index}:${c.reset} ${monitor.height}x${monitor.width}`);
 		}

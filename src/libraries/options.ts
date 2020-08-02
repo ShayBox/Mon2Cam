@@ -1,4 +1,4 @@
-import { OutputMode } from "./libraries/exec.ts";
+import { OutputMode } from "./exec.ts";
 import { parse } from "https://deno.land/std@0.62.0/flags/mod.ts";
 
 export default class Options {

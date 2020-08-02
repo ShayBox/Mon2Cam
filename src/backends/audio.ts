@@ -1,7 +1,7 @@
-import Logger from "../logging.ts";
+import Logger from "../libraries/logging.ts";
 import { exec } from "../libraries/exec.ts";
-import Options from "../options.ts";
-import {readStdin} from "../utility.ts";
+import Options from "../libraries/options.ts";
+import {readStdin} from "../libraries/utility.ts";
 
 /*
 /  VS_APP Is responsible for combining the sound of the applications. 

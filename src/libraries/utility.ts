@@ -1,4 +1,4 @@
-import { exec } from "./libraries/exec.ts";
+import { exec } from "./exec.ts";
 
 export async function readStdin() {
 	const buffer = new Uint8Array(1024);

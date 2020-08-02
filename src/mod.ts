@@ -1,6 +1,6 @@
 import { exec } from "./libraries/exec.ts";
-import Logger from "./logging.ts";
-import Options from "./options.ts";
+import Logger from "./libraries/logging.ts";
+import Options from "./libraries/options.ts";
 import startWayland from "./backends/x11.ts";
 import startX11 from "./backends/x11.ts";
 import startSound from "./backends/audio.ts"
