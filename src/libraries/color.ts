@@ -1,4 +1,4 @@
-export default {
+const colors = {
 	reset: "\x1b[0m",
 	bright: "\x1b[1m",
 	dim: "\x1b[2m",
@@ -23,3 +23,8 @@ export default {
 	bgCyan: "\x1b[46m",
 	bgWhite: "\x1b[47m",
 };
+
+export default colors;
+export function wrap(color: string, value: string) {
+	return color + value + colors.reset;
+}
