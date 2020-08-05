@@ -1,6 +1,6 @@
 import { exec } from "../libraries/exec.ts";
 import { readStdin, checkDependency } from "../libraries/utility.ts";
-import Logger, { Color, wrap } from "../libraries/logging.ts";
+import { Logger, Color, wrap } from "../libraries/logging.ts";
 import Options from "../libraries/options.ts";
 
 interface XMonitorInfo {

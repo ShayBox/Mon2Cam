@@ -1,5 +1,5 @@
 import { exec } from "./exec.ts";
-import Logger from "./logging.ts";
+import { Logger } from "./logging.ts";
 
 export async function readStdin() {
 	const buffer = new Uint8Array(1024);

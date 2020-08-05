@@ -1,13 +1,14 @@
+#!/usr/bin/env -S deno run --unstable --allow-run --allow-read --allow-env
+
 import { exec } from "./libraries/exec.ts";
-import Logger from "./libraries/logging.ts";
+import { Logger } from "./libraries/logging.ts";
 import Options from "./libraries/options.ts";
 import startWayland from "./backends/x11.ts";
 import startX11 from "./backends/x11.ts";
-import startSound, {dispose as disposeAudio} from "./backends/audio.ts"
+import startSound, { dispose as disposeAudio } from "./backends/audio.ts";
 
 const options = new Options(Deno.args);
 const logger = new Logger(options.verbose);
-
 
 await Deno.stat("/dev/video" + options.device).catch(async (error) => {
 	if (error instanceof Deno.errors.NotFound) {

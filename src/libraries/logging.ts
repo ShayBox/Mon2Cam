@@ -1,4 +1,4 @@
-import {dispose as disposeAudio} from "../backends/audio.ts"
+import { dispose as disposeAudio } from "../backends/audio.ts";
 
 export enum LogType {
 	Debug,
@@ -9,7 +9,7 @@ export enum LogType {
 	Warning,
 }
 
-export default class Logger {
+export class Logger {
 	private verbose: boolean;
 
 	constructor(verbose: boolean) {
@@ -59,34 +59,34 @@ export default class Logger {
 		disposeAudio(this).finally(() => {
 			this.output(wrap(Color.red, `PANIC ${msg}`), LogType.Panic);
 			Deno.exit(code || 1);
-		})
+		});
 	}
 }
 
-export class Color {
-	public static readonly reset: "\x1b[0m";
-	public static readonly bright: "\x1b[1m";
-	public static readonly dim: "\x1b[2m";
-	public static readonly underscore: "\x1b[4m";
-	public static readonly blink: "\x1b[5m";
-	public static readonly reverse: "\x1b[7m";
-	public static readonly hidden: "\x1b[8m";
-	public static readonly black: "\x1b[30m";
-	public static readonly red: "\x1b[31m";
-	public static readonly green: "\x1b[32m";
-	public static readonly yellow: "\x1b[33m";
-	public static readonly blue: "\x1b[34m";
-	public static readonly magenta = "\x1b[35m";
-	public static readonly cyan: "\x1b[36m";
-	public static readonly white: "\x1b[37m";
-	public static readonly bgBlack: "\x1b[40m";
-	public static readonly bgRed: "\x1b[41m";
-	public static readonly bgGreen: "\x1b[42m";
-	public static readonly bgYellow: "\x1b[43m";
-	public static readonly bgBlue: "\x1b[44m";
-	public static readonly bgMagenta: "\x1b[45m";
-	public static readonly bgCyan: "\x1b[46m";
-	public static readonly bgWhite: "\x1b[47m";
+export enum Color {
+	reset = "\x1b[0m",
+	bright = "\x1b[1m",
+	dim = "\x1b[2m",
+	underscore = "\x1b[4m",
+	blink = "\x1b[5m",
+	reverse = "\x1b[7m",
+	hidden = "\x1b[8m",
+	black = "\x1b[30m",
+	red = "\x1b[31m",
+	green = "\x1b[32m",
+	yellow = "\x1b[33m",
+	blue = "\x1b[34m",
+	magenta = "\x1b[35m",
+	cyan = "\x1b[36m",
+	white = "\x1b[37m",
+	bgBlack = "\x1b[40m",
+	bgRed = "\x1b[41m",
+	bgGreen = "\x1b[42m",
+	bgYellow = "\x1b[43m",
+	bgBlue = "\x1b[44m",
+	bgMagenta = "\x1b[45m",
+	bgCyan = "\x1b[46m",
+	bgWhite = "\x1b[47m",
 }
 
 export function wrap(color: Color, value: string) {
