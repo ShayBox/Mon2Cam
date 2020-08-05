@@ -1,5 +1,5 @@
-import Logger, { Color as c } from "../libraries/logging.ts";
-import { exec } from "../libraries/exec.ts";
+import Logger, {Color} from "../libraries/logging.ts";
+import { exec, OutputMode } from "../libraries/exec.ts";
 import Options from "../libraries/options.ts";
 import {readStdin} from "../libraries/utility.ts";
 
@@ -25,7 +25,7 @@ let createdModules:Number[] = [];
 
 export default async function (options: Options, logger: Logger) {
 	// TODO: Detect already created modules
-	
+
 	let apps = await getUserSelectedApplications();
 	let sources = await getUserSelectedSources();
 
@@ -40,7 +40,27 @@ export default async function (options: Options, logger: Logger) {
 		createLoopbackDevice(sources, micSink.index)
 	});
 
+	switchDiscordRecording(micSink);
+
 	//#region Functions
+	async function switchDiscordRecording(micSink: Sink): Promise<void> {
+		return new Promise(async resolve => {
+			while(true) {
+				await new Promise(r => setTimeout(r, 2000)); // Wait for 2 seconds
+				let cmd = await exec("pactl list source-outputs", { output: options.output });
+				let parsed = parseOutput(cmd.output);
+				parsed.forEach(recording => {
+					// Find the discord recording, switch to the recording sink and then exit the loop
+					if(recording.properties["application.process.binary"] == "\"Discord\"") {
+						moveSourceOutput(recording.index, `${micSink.name}.monitor`);
+					}
+				});
+				
+			}
+			resolve();
+		});
+	}
+
 	async function getSinks(): Promise<Sink[]> {
 		return new Promise(async resolve => {
 			let cmd = await exec("pactl list short sinks", { output: options.output });
@@ -127,7 +147,7 @@ export default async function (options: Options, logger: Logger) {
 				logger.panic("Zero slaves passed to createCombinedSink");
 			let cmd = await exec(
 				`pactl load-module module-combine-sink sink_name="${name}" slaves="${slaves.join()}" sink_properties=device.description="${description}"`,
-				{ output: options.output , verbose: true}
+				{ output: options.output}
 			);
 			if (cmd.status.success) {
 				createdModules.push(parseInt(cmd.output));
@@ -170,6 +190,22 @@ export default async function (options: Options, logger: Logger) {
 		});
 	}
 
+	// Choose where to record from
+	async function moveSourceOutput(recordingIndex:number, source:string): Promise<void> {
+		return new Promise(async resolve => {
+			let cmd = await exec(
+				`pactl move-source-output ${recordingIndex} ${source}`,
+				{ output: options.output }
+			);
+			if (cmd.status.success) {
+				logger.debug(`Moved source-output (${recordingIndex}) to source ${source}`);
+				resolve();
+			} else {
+				logger.panic(`An error occured while trying to move source-output (${recordingIndex}) to source ${source}`, cmd.status.code);
+			}
+		});
+	}
+
 	// FIXME: Wtf is this name
 	async function getUserInputtedIndexList(whitelist: number[]): Promise<number[]> {
 		return new Promise(async resolve => {
@@ -184,7 +220,7 @@ export default async function (options: Options, logger: Logger) {
 				if(isNaN(index))
 					logger.panic(LIST_ERROR_MESSAGE_NAN);
 				else if(!whitelist.includes(index)) {
-					logger.panic(`You passed a wrong index. ${c.blue}${index}${c.reset} ${c.red}not found!`)
+					logger.panic(`You passed a wrong index. ${Color.blue}${index}${Color.reset} ${Color.red}not found!`)
 				}
 				output.push(parseInt(elem));
 			});
@@ -201,11 +237,11 @@ export default async function (options: Options, logger: Logger) {
 			parsed.forEach(sinkInput => {
 				if(sinkInput.properties["application.name"]) { // If the input is an application
 					let app_name = sinkInput.properties["application.name"].replace(/"/g, "");
-					logger.log(`${c.yellow}${sinkInput.index}:${c.reset} ${app_name}`)
+					logger.log(`${Color.yellow}${sinkInput.index}:${Color.reset} ${app_name}`)
 					whitelist.push(sinkInput.index);
 				} 
 			});
-			logger.log("Choose which applications you want to route(space separated list):", c.yellow);
+			logger.log("Choose which applications you want to route(space separated list):", Color.yellow);
 			resolve(await getUserInputtedIndexList(whitelist));
 		})
 	}
@@ -219,11 +255,11 @@ export default async function (options: Options, logger: Logger) {
 			parsed.forEach(source => {
 				if(source.properties["udev.id"]) { // If the source is an actual physical device
 					let name = source.properties["device.product.name"].replace(/"/g, "");
-					logger.log(`${c.yellow}${source.index}:${c.reset} ${name}`)
+					logger.log(`${Color.yellow}${source.index}:${Color.reset} ${name}`)
 					whitelist.push(source.index);
 				} 
 			});
-			logger.log("Choose which sources you want to route(space separated list):", c.yellow);
+			logger.log("Choose which sources you want to route(space separated list):", Color.yellow);
 			resolve(await getUserInputtedIndexList(whitelist));
 		})
 	}
