@@ -3,6 +3,7 @@ Fix for multi-monitor Discord screensharing
 
 Dependencies:
 -
+- wf-recorder (for Wayland support)
 - xrandr
 - ffmpeg
 - v4l2loopback 0.12+
@@ -36,6 +37,8 @@ options:
 -r,  --resolution W:H     manually set output resolution
 -b,  --border             add border when scaling to avoid stretching
 -s,  --sound              create virtual sink and route sound into it (requires pulseaudio)
+-w,  --wayland            force support for Wayland sessions
+-x,  --x11                force support for X11 sessions
 ```
 
 ```
