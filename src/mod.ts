@@ -18,11 +18,13 @@ await Deno.stat("/dev/video" + options.device).catch(async (error) => {
 });
 
 if (!options.wayland) {
-	await exec("xisxwayland", { output: 3 }).then((cmd) => {
-		if (cmd.status.success) {
-			options.wayland = true;
-		}
-	});
+	await exec("xisxwayland", { output: 3 })
+		.then((cmd) => {
+			if (cmd.status.success) {
+				options.wayland = true;
+			}
+		})
+		.catch(() => null);
 }
 
 if (options.sound) await startSound(options, logger);
