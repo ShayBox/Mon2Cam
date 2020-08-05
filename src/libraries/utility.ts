@@ -1,4 +1,5 @@
 import { exec } from "./exec.ts";
+import Logger from "./logging.ts";
 
 export async function readStdin() {
 	const buffer = new Uint8Array(1024);
@@ -7,14 +8,12 @@ export async function readStdin() {
 	return new TextDecoder().decode(buffer.subarray(0, number));
 }
 
-export async function checkDependency(command: string) {
+export async function checkDependency(command: string, logger: Logger) {
 	await exec(command, { output: 0 }).catch((error) => {
 		if (error instanceof Deno.errors.NotFound) {
-			console.log(command + " not installed");
+			logger.panic(command + " not installed");
 		} else {
-			console.error(error);
+			logger.panic(error);
 		}
-
-		Deno.exit(1);
 	});
 }

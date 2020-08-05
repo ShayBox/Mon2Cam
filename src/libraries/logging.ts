@@ -40,57 +40,55 @@ export default class Logger {
 	}
 
 	public info(msg: string): void {
-		this.output(wrap(colors.blue, "INFO ") + msg, LogType.Info);
+		this.output(wrap(Color.blue, "INFO ") + msg, LogType.Info);
 	}
 	public warn(msg: string): void {
-		this.output(wrap(colors.yellow, "WARN ") + msg, LogType.Warning);
+		this.output(wrap(Color.yellow, "WARN ") + msg, LogType.Warning);
 	}
 	public error(msg: string): void {
-		this.output(wrap(colors.red, "ERROR ") + msg, LogType.Error);
+		this.output(wrap(Color.red, "ERROR ") + msg, LogType.Error);
 	}
 	public debug(msg: string): void {
-		this.output(wrap(colors.magenta, "DEBUG ") + msg, LogType.Debug);
+		this.output(wrap(Color.magenta, "DEBUG ") + msg, LogType.Debug);
 	}
-	public log(msg: string, color?: color ): void {
+	public log(msg: string, color?: Color): void {
 		let _msg = color ? wrap(color, msg) : msg;
 		this.output(_msg, LogType.Log);
 	}
 	public panic(msg: string, code?: number): void {
 		disposeAudio(this).finally(() => {
-			this.output(wrap(colors.red, `PANIC ${msg}`), LogType.Panic);
+			this.output(wrap(Color.red, `PANIC ${msg}`), LogType.Panic);
 			Deno.exit(code || 1);
 		})
 	}
 }
 
-export class colors {
-	static readonly reset: color = "\x1b[0m";
-	static readonly bright: color = "\x1b[1m";
-	static readonly dim: color = "\x1b[2m";
-	static readonly underscore: color = "\x1b[4m";
-	static readonly blink: color = "\x1b[5m";
-	static readonly reverse: color = "\x1b[7m";
-	static readonly hidden: color = "\x1b[8m";
-	static readonly black: color = "\x1b[30m";
-	static readonly red: color = "\x1b[31m";
-	static readonly green: color = "\x1b[32m";
-	static readonly yellow: color = "\x1b[33m";
-	static readonly blue: color = "\x1b[34m";
-	static readonly magenta= "\x1b[35m";
-	static readonly cyan: color = "\x1b[36m";
-	static readonly white: color = "\x1b[37m";
-	static readonly bgBlack: color = "\x1b[40m";
-	static readonly bgRed: color = "\x1b[41m";
-	static readonly bgGreen: color = "\x1b[42m";
-	static readonly bgYellow: color = "\x1b[43m";
-	static readonly bgBlue: color = "\x1b[44m";
-	static readonly bgMagenta: color = "\x1b[45m";
-	static readonly bgCyan: color = "\x1b[46m";
-	static readonly bgWhite: color = "\x1b[47m";
-};
+export class Color {
+	public static readonly reset: "\x1b[0m";
+	public static readonly bright: "\x1b[1m";
+	public static readonly dim: "\x1b[2m";
+	public static readonly underscore: "\x1b[4m";
+	public static readonly blink: "\x1b[5m";
+	public static readonly reverse: "\x1b[7m";
+	public static readonly hidden: "\x1b[8m";
+	public static readonly black: "\x1b[30m";
+	public static readonly red: "\x1b[31m";
+	public static readonly green: "\x1b[32m";
+	public static readonly yellow: "\x1b[33m";
+	public static readonly blue: "\x1b[34m";
+	public static readonly magenta = "\x1b[35m";
+	public static readonly cyan: "\x1b[36m";
+	public static readonly white: "\x1b[37m";
+	public static readonly bgBlack: "\x1b[40m";
+	public static readonly bgRed: "\x1b[41m";
+	public static readonly bgGreen: "\x1b[42m";
+	public static readonly bgYellow: "\x1b[43m";
+	public static readonly bgBlue: "\x1b[44m";
+	public static readonly bgMagenta: "\x1b[45m";
+	public static readonly bgCyan: "\x1b[46m";
+	public static readonly bgWhite: "\x1b[47m";
+}
 
-export class color extends String{}
-
-export function wrap(color: color, value: string) {
-	return color + value + colors.reset;
+export function wrap(color: Color, value: string) {
+	return color + value + Color.reset;
 }

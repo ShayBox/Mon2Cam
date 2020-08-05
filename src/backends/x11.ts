@@ -1,6 +1,6 @@
 import { exec } from "../libraries/exec.ts";
 import { readStdin, checkDependency } from "../libraries/utility.ts";
-import Logger, {colors as c} from "../libraries/logging.ts";
+import Logger, { Color, wrap } from "../libraries/logging.ts";
 import Options from "../libraries/options.ts";
 
 interface XMonitorInfo {
@@ -27,8 +27,8 @@ function getMonitorInfo(xrandr: string): XMonitorInfo {
 }
 
 export default async function (options: Options, logger: Logger) {
-	await checkDependency("xrandr");
-	await checkDependency("ffmpeg");
+	await checkDependency("xrandr", logger);
+	await checkDependency("ffmpeg", logger);
 
 	const { output } = await exec("xrandr --listactivemonitors", { output: 2 });
 	const lines = output.split("\n").slice(1);
@@ -36,9 +36,9 @@ export default async function (options: Options, logger: Logger) {
 	if (!options.monitor) {
 		const monitors = lines.map((line) => getMonitorInfo(line));
 		for (const monitor of monitors) {
-			logger.log(`${c.yellow}${monitor.index}:${c.reset} ${monitor.width}x${monitor.height}`);
+			logger.log(`${wrap(Color.yellow, monitor.index)}: ${monitor.width}x${monitor.height}`);
 		}
-		logger.log("Which monitor?", c.yellow);
+		logger.log("Which monitor?", Color.yellow);
 
 		const monitor = parseInt(await readStdin(), 10);
 		if (isNaN(monitor)) {

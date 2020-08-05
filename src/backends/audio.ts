@@ -1,4 +1,4 @@
-import Logger, { colors as c } from "../libraries/logging.ts";
+import Logger, { Color as c } from "../libraries/logging.ts";
 import { exec } from "../libraries/exec.ts";
 import Options from "../libraries/options.ts";
 import {readStdin} from "../libraries/utility.ts";
