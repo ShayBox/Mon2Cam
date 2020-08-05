@@ -53,6 +53,19 @@ export default async function (options: Options, logger: Logger) {
 		options.monitor = monitor;
 	}
 
+	if (options.resolution) {
+		if (options.border) {
+			const split = options.resolution.split(":");
+			const width = split[0];
+			const height = split[1];
+			options.ffmpeg.push(
+				`-vf scale=${options.resolution}:force_original_aspect_ratio=decrease,pad=${width}:${height}:x=(${width}-iw)/2:y=(${height}-ih)/2`
+			);
+		} else {
+			options.ffmpeg.push(`-vf scale=${options.resolution}`);
+		}
+	}
+
 	const monitor = getMonitorInfo(lines[options.monitor]);
 	const display = Deno.env.get("DISPLAY");
 	if (!display) {
