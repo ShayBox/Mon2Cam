@@ -24,7 +24,6 @@ const LIST_ERROR_MESSAGE_NAN = "You need to pass a space separated list e.g.:\"3
 let createdModules:Number[] = [];
 
 export default async function (options: Options, logger: Logger) {
-	// TODO: Get user input
 	// TODO: Detect already created modules
 	
 	let apps = await getUserSelectedApplications();
