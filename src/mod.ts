@@ -3,10 +3,11 @@ import Logger from "./libraries/logging.ts";
 import Options from "./libraries/options.ts";
 import startWayland from "./backends/x11.ts";
 import startX11 from "./backends/x11.ts";
-import startSound from "./backends/audio.ts"
+import startSound, {dispose as disposeAudio} from "./backends/audio.ts"
 
 const options = new Options(Deno.args);
 const logger = new Logger(options.verbose);
+
 
 await Deno.stat("/dev/video" + options.device).catch(async (error) => {
 	if (error instanceof Deno.errors.NotFound) {
@@ -15,9 +16,14 @@ await Deno.stat("/dev/video" + options.device).catch(async (error) => {
 	} else logger.error(error);
 });
 
-if (options.sound) startSound(options, logger);
+if (options.sound) await startSound(options, logger);
 if (options.wayland) {
-	await startWayland(options, logger);
+	startWayland(options, logger);
 } else {
-	await startX11(options, logger);
+	startX11(options, logger);
+}
+
+for await (const _ of Deno.signal(Deno.Signal.SIGINT)) {
+	await disposeAudio(logger);
+	Deno.exit();
 }

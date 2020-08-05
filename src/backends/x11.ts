@@ -19,8 +19,8 @@ function getMonitorInfo(xrandr: string): XMonitorInfo {
 
 	return {
 		index: regexGroups[1],
-		height: regexGroups[2],
-		width: regexGroups[4],
+		height: regexGroups[4],
+		width: regexGroups[2],
 		x: regexGroups[6],
 		y: regexGroups[7],
 	};
@@ -36,7 +36,7 @@ export default async function (options: Options, logger: Logger) {
 	if (!options.monitor) {
 		const monitors = lines.map((line) => getMonitorInfo(line));
 		for (const monitor of monitors) {
-			logger.log(`${c.yellow}${monitor.index}:${c.reset} ${monitor.height}x${monitor.width}`);
+			logger.log(`${c.yellow}${monitor.index}:${c.reset} ${monitor.width}x${monitor.height}`);
 		}
 		logger.log("Which monitor?", c.yellow);
 

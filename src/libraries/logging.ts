@@ -1,3 +1,4 @@
+import {dispose as disposeAudio} from "../backends/audio.ts"
 
 export enum LogType {
 	Debug,
@@ -55,8 +56,10 @@ export default class Logger {
 		this.output(_msg, LogType.Log);
 	}
 	public panic(msg: string, code?: number): void {
-		this.output(wrap(colors.red, `PANIC ${msg}`), LogType.Panic);
-		Deno.exit(code || 1);
+		disposeAudio(this).finally(() => {
+			this.output(wrap(colors.red, `PANIC ${msg}`), LogType.Panic);
+			Deno.exit(code || 1);
+		})
 	}
 }
 
