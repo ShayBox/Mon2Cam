@@ -1,4 +1,4 @@
-import { v4 } from "https://deno.land/std/uuid/mod.ts";
+import { v4 } from "https://deno.land/std@0.63.0/uuid/mod.ts";
 
 function splitCommand(command: string): string[] {
 	var myRegexp = /[^\s]+|"([^"]*)"/gi;
