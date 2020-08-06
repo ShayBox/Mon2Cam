@@ -1,5 +1,5 @@
 import { Logger, Color } from "../libraries/logging.ts";
-import { exec } from "../libraries/exec.ts";
+import { exec, OutputMode } from "../libraries/exec.ts";
 import Options from "../libraries/options.ts";
 import { readStdin } from "../libraries/utility.ts";
 
@@ -48,7 +48,7 @@ export default async function (options: Options, logger: Logger) {
 		return new Promise(async (resolve) => {
 			while (true) {
 				await new Promise((r) => setTimeout(r, 2000)); // Wait for 2 seconds
-				let cmd = await exec("pactl list source-outputs", { output: options.output });
+				let cmd = await exec("pactl list source-outputs", { output: options.output, verbose: options.output == OutputMode.Tee });
 				let parsed = parseOutput(cmd.output);
 				parsed.forEach((recording) => {
 					// Find the discord recording, switch to the recording sink and then exit the loop
@@ -63,7 +63,7 @@ export default async function (options: Options, logger: Logger) {
 
 	async function getSinks(): Promise<Sink[]> {
 		return new Promise(async (resolve) => {
-			let cmd = await exec("pactl list short sinks", { output: options.output });
+			let cmd = await exec("pactl list short sinks", { output: options.output, verbose: options.output == OutputMode.Tee });
 			if (cmd.status.success) {
 				let lines = cmd.output.split("\n");
 				let sinks: Sink[] = [];
@@ -81,7 +81,7 @@ export default async function (options: Options, logger: Logger) {
 
 	async function getSink(identifier: string | number): Promise<Sink> {
 		return new Promise(async (resolve) => {
-			let cmd = await exec("pactl list short sinks", { output: options.output });
+			let cmd = await exec("pactl list short sinks", { output: options.output, verbose: options.output == OutputMode.Tee });
 			if (cmd.status.success) {
 				let lines = cmd.output.split("\n");
 				lines.forEach((line) => {
@@ -104,7 +104,7 @@ export default async function (options: Options, logger: Logger) {
 
 	async function getSinkByModule(moduleIndex: number): Promise<Sink> {
 		return new Promise(async (resolve) => {
-			let cmd = await exec("pactl list sinks", { output: options.output });
+			let cmd = await exec("pactl list sinks", { output: options.output, verbose: options.output == OutputMode.Tee });
 			if (cmd.status.success) {
 				let parsed = parseOutput(cmd.output);
 				parsed.forEach((sink) => {
@@ -132,7 +132,7 @@ export default async function (options: Options, logger: Logger) {
 		return new Promise(async (resolve) => {
 			let cmd = await exec(
 				`pactl load-module module-null-sink sink_name="${name}" sink_properties=device.description="${description}"`,
-				{ output: options.output }
+				{ output: options.output, verbose: options.output == OutputMode.Tee }
 			);
 			if (cmd.status.success) {
 				createdModules.push(parseInt(cmd.output));
@@ -150,7 +150,7 @@ export default async function (options: Options, logger: Logger) {
 			if (slaves.length == 0) logger.panic("Zero slaves passed to createCombinedSink");
 			let cmd = await exec(
 				`pactl load-module module-combine-sink sink_name="${name}" slaves="${slaves.join()}" sink_properties=device.description="${description}"`,
-				{ output: options.output }
+				{ output: options.output, verbose: options.output == OutputMode.Tee }
 			);
 			if (cmd.status.success) {
 				createdModules.push(parseInt(cmd.output));
@@ -166,7 +166,7 @@ export default async function (options: Options, logger: Logger) {
 		return new Promise(async (resolve) => {
 			let cmd = await exec(
 				`pactl load-module module-loopback source=${inputSource} sink=${outputSink} sink_dont_move=true source_dont_move=true`,
-				{ output: options.output }
+				{ output: options.output, verbose: options.output == OutputMode.Tee }
 			);
 			if (cmd.status.success) {
 				createdModules.push(parseInt(cmd.output));
@@ -187,7 +187,8 @@ export default async function (options: Options, logger: Logger) {
 
 	async function moveSinkInput(inputIndex: number, outputSink: number): Promise<void> {
 		return new Promise(async (resolve) => {
-			let cmd = await exec(`pactl move-sink-input ${inputIndex} ${outputSink}`, { output: options.output });
+			let cmd = await exec(`pactl move-sink-input ${inputIndex} ${outputSink}`, { output: options.output, verbose: options.output == OutputMode.Tee });
+			
 			if (cmd.status.success) {
 				logger.debug(`Moved sink-input (${inputIndex}) to sink number ${outputSink}`);
 				resolve();
@@ -203,7 +204,7 @@ export default async function (options: Options, logger: Logger) {
 	// Choose where to record from
 	async function moveSourceOutput(recordingIndex: number, source: string): Promise<void> {
 		return new Promise(async (resolve) => {
-			let cmd = await exec(`pactl move-source-output ${recordingIndex} ${source}`, { output: options.output });
+			let cmd = await exec(`pactl move-source-output ${recordingIndex} ${source}`, { output: options.output, verbose: options.output == OutputMode.Tee });
 			if (cmd.status.success) {
 				logger.debug(`Moved source-output (${recordingIndex}) to source ${source}`);
 				resolve();
@@ -238,7 +239,7 @@ export default async function (options: Options, logger: Logger) {
 
 	async function getUserSelectedApplications(): Promise<number[]> {
 		return new Promise(async (resolve) => {
-			let cmd = await exec("pactl list sink-inputs", { output: options.output });
+			let cmd = await exec("pactl list sink-inputs", { output: options.output, verbose: options.output == OutputMode.Tee });
 			let parsed = parseOutput(cmd.output);
 			let whitelist: number[] = [];
 
@@ -257,7 +258,7 @@ export default async function (options: Options, logger: Logger) {
 
 	async function getUserSelectedSources(): Promise<number[]> {
 		return new Promise(async (resolve) => {
-			let cmd = await exec("pactl list sources", { output: options.output });
+			let cmd = await exec("pactl list sources", { output: options.output, verbose: options.output == OutputMode.Tee });
 			let parsed = parseOutput(cmd.output);
 			let whitelist: number[] = [];
 
