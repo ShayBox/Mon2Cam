@@ -15,7 +15,7 @@ Ubuntu 18.04 and below does not provide v4l2loopback 0.12, if you use older vers
 ## Instructions:
 
 - Install [Deno]
-- Run `curl -s https://raw.githubusercontent.com/ShayBox/Mon2Cam/deno-rewrite/install.sh | sh`
+- Run `curl -s https://raw.githubusercontent.com/ShayBox/Mon2Cam/master/install.sh | sh`
 - Open a new terminal and type `mon2cam`
 - Switch discord webcam
 
