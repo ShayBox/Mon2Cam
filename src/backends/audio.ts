@@ -28,14 +28,21 @@ export default async function (options: Options, logger: Logger) {
 	let apps = await getUserSelectedApplications();
 	let sources = await getUserSelectedSources();
 
-	let micSink = await getSinkByModule(await createNullSink(VS_MIC, VS_MIC_DESCRIPTION));
-	let combinedSink = await getSinkByModule(
-		await createCombinedSink("VirtualSinkAPP", `Mon2CamCombinedSink`, [micSink.name, DEFAULT_SINK])
-	);
+	if(apps.length == 0 && sources.length == 0)
+		logger.warn("No applications, nor any sources passed. Why are you using the sound flag?")
 
-	for (const app of apps) {
-		await moveSinkInput(app, combinedSink.index);
+	let micSink = await getSinkByModule(await createNullSink(VS_MIC, VS_MIC_DESCRIPTION));
+	
+	if(apps.length > 0) {
+		let combinedSink = await getSinkByModule(
+			await createCombinedSink("VirtualSinkAPP", `Mon2CamCombinedSink`, [micSink.name, DEFAULT_SINK])
+		);
+		for (const app of apps) {
+			await moveSinkInput(app, combinedSink.index);
+		}
 	}
+	else
+		logger.debug("No applications passed therefore skipping combined sink creation.");
 
 	sources.forEach((sources) => {
 		createLoopbackDevice(sources, micSink.index);
@@ -232,18 +239,25 @@ export default async function (options: Options, logger: Logger) {
 		});
 	}
 
-	// FIXME: Wtf is this name
-	async function getUserInputtedIndexList(whitelist: number[]): Promise<number[]> {
-		return new Promise(async (resolve) => {
-			const sinkInputs = (await readStdin()).trim();
-			if (sinkInputs.length == 0) logger.panic(LIST_ERROR_MESSAGE_NAN);
+	async function checkIfWhitelistContainsIndex(whitelist: ParsedOutputElement[], index: number): Promise<boolean> {
+		for (let i = 0; i < whitelist.length; i++) {
+			const element = whitelist[i];
+			if(element.index == index)
+				return true;
+		}
+		return false;
+	}
 
-			var split = sinkInputs.split(" ");
+	// FIXME: Wtf is this name
+	async function getUserInputtedIndexList(whitelist: ParsedOutputElement[]): Promise<number[]> {
+		return new Promise(async (resolve) => {
+			const indexListString = (await readStdin()).trim();
+			var split = indexListString == "" ? [] : indexListString.split(" ");
 			let output: number[] = [];
 			split.forEach((elem) => {
 				let index = parseInt(elem);
 				if (isNaN(index)) logger.panic(LIST_ERROR_MESSAGE_NAN);
-				else if (!whitelist.includes(index)) {
+				if (!checkIfWhitelistContainsIndex(whitelist, index)) {
 					logger.panic(`You passed a wrong index. ${Color.blue}${index}${Color.reset} ${Color.red}not found!`);
 				}
 				output.push(parseInt(elem));
@@ -259,37 +273,52 @@ export default async function (options: Options, logger: Logger) {
 				verbose: options.output == OutputMode.Tee,
 			});
 			let parsed = parseOutput(cmd.output);
+			let validApps: ParsedOutputElement[] = [];
 			let whitelist: number[] = [];
 
 			parsed.forEach((sinkInput) => {
-				if (sinkInput.properties["application.name"]) {
-					// If the input is an application
+				// If the input is an application
+				if (sinkInput.properties["application.name"])
+					validApps.push(sinkInput);
+			});
+			if(validApps.length > 0) {
+				validApps.forEach((sinkInput) => {
 					let app_name = sinkInput.properties["application.name"].replace(/"/g, "");
 					logger.log(`${Color.yellow}${sinkInput.index}:${Color.reset} ${app_name}`);
-					whitelist.push(sinkInput.index);
-				}
-			});
-			logger.log("Choose which applications you want to route(space separated list):", Color.yellow);
-			resolve(await getUserInputtedIndexList(whitelist));
+				});
+				logger.log("Choose which applications you want to route(space separated list):", Color.yellow);
+				resolve(await getUserInputtedIndexList(validApps));
+			}
+			else {
+				logger.info("No valid applications found");
+				resolve([]);
+			}
 		});
 	}
 
 	async function getUserSelectedSources(): Promise<number[]> {
 		return new Promise(async (resolve) => {
 			let cmd = await exec("pactl list sources", { output: options.output, verbose: options.output == OutputMode.Tee });
+			
 			let parsed = parseOutput(cmd.output);
-			let whitelist: number[] = [];
-
+			let validSources: ParsedOutputElement[] = [];
 			parsed.forEach((source) => {
-				if (source.properties["udev.id"]) {
-					// If the source is an actual physical device
-					let name = source.properties["device.product.name"].replace(/"/g, "");
-					logger.log(`${Color.yellow}${source.index}:${Color.reset} ${name}`);
-					whitelist.push(source.index);
-				}
+				// If the source is an actual physical device
+				if (source.properties["udev.id"])
+					validSources.push(source);
 			});
-			logger.log("Choose which sources you want to route(space separated list):", Color.yellow);
-			resolve(await getUserInputtedIndexList(whitelist));
+			if(validSources.length > 0) {
+				validSources.forEach((source) => {
+					let source_name = source.properties["device.product.name"].replace(/"/g, "");
+					logger.log(`${Color.yellow}${source.index}:${Color.reset} ${source_name}`);
+				});
+				logger.log("Choose which sources you want to route(space separated list):", Color.yellow);
+				resolve(await getUserInputtedIndexList(validSources));
+			}
+			else {
+				logger.info("No valid applications found");
+				resolve([]);
+			}
 		});
 	}
 	//#endregion
