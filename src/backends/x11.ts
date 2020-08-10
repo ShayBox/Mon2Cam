@@ -33,7 +33,7 @@ export default async function (options: Options, logger: Logger) {
 	const { output } = await exec("xrandr --listactivemonitors", { output: 2 });
 	const lines = output.split("\n").slice(1);
 
-	if (!options.monitor) {
+	if (typeof options.monitor !== "number") {
 		const monitors = lines.map((line) => getMonitorInfo(line));
 		for (const monitor of monitors) {
 			logger.log(`${wrap(Color.yellow, monitor.index)}: ${monitor.width}x${monitor.height}`);
