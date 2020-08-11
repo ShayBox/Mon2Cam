@@ -304,7 +304,8 @@ export default async function (options: Options, logger: Logger) {
 			let validSources: ParsedOutputElement[] = [];
 			parsed.forEach((source) => {
 				// If the source is an actual physical device
-				if (source.properties["udev.id"])
+				console.log(source)
+				if (source.arguments["Name"] && !source.arguments["Name"].endsWith(".monitor"))
 					validSources.push(source);
 			});
 			if(validSources.length > 0) {
