@@ -316,7 +316,7 @@ export default async function (options: Options, logger: Logger) {
 				resolve(await getUserInputtedIndexList(validSources));
 			}
 			else {
-				logger.info("No valid applications found");
+				logger.info("No valid sources found");
 				resolve([]);
 			}
 		});
