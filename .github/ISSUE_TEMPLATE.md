@@ -1,1 +1,1 @@
-<!-- Please include output with --verbose in a paste, hastebin.com -->
+<!-- Please include the log file "mon2cam -v=log" with your bug report -->
