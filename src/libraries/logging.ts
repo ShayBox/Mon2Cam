@@ -16,11 +16,17 @@ export class Logger {
 	}
 
 	private async output(stdout: Function, msg: string, prefix?: string): Promise<void> {
-		const _msg = prefix ? `${prefix} ${msg}` : msg;
+		let _msg = prefix ? `${prefix} ${msg}` : msg;
 
 		stdout(_msg);
 
-		if (this.file) this.data.push(_msg);
+		if (this.file) {
+			for (const key in Object.keys(Color).filter((key) => isNaN(Number(key)))) {
+				const color = Object.values(Color)[key];
+				_msg = _msg.replaceAll(color, "");
+			}
+			this.data.push(_msg);
+		}
 	}
 
 	public info(msg: string): void {
