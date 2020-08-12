@@ -1,63 +1,46 @@
 import { dispose as disposeAudio } from "../backends/audio.ts";
 
-export enum LogType {
-	Debug,
-	Error,
-	Info,
-	Log,
-	Panic,
-	Warning,
+export interface LoggerOptions {
+	verbose: boolean;
+	file?: string;
 }
 
 export class Logger {
 	private verbose: boolean;
+	private file?: string;
 
-	constructor(verbose: boolean) {
-		this.verbose = verbose;
+	public constructor(options: LoggerOptions) {
+		this.verbose = options.verbose;
+		this.file = options.file;
 	}
 
-	output(msg: string, type: LogType): void {
-		switch (type) {
-			case LogType.Debug: {
-				if (!this.verbose) break;
-			}
-			case LogType.Info:
-				console.info(msg);
-				break;
+	private async output(stdout: Function, msg: string, prefix?: string): Promise<void> {
+		let args = [msg];
 
-			case LogType.Log:
-				console.log(msg);
-				break;
+		if (prefix) args.unshift(prefix + " ");
 
-			case LogType.Warning:
-				console.warn(msg);
-				break;
-
-			case LogType.Error:
-			case LogType.Panic:
-				console.error(msg);
-		}
+		stdout(args.join(""));
 	}
 
 	public info(msg: string): void {
-		this.output(wrap(Color.blue, "INFO ") + msg, LogType.Info);
+		this.output(console.info, msg, wrap(Color.blue, "INFO"));
 	}
 	public warn(msg: string): void {
-		this.output(wrap(Color.yellow, "WARN ") + msg, LogType.Warning);
+		this.output(console.warn, msg, wrap(Color.yellow, "WARN"));
 	}
 	public error(msg: string): void {
-		this.output(wrap(Color.red, "ERROR ") + msg, LogType.Error);
+		this.output(console.error, msg, wrap(Color.red, "ERROR"));
 	}
 	public debug(msg: string): void {
-		this.output(wrap(Color.magenta, "DEBUG ") + msg, LogType.Debug);
+		this.output(console.info, msg, wrap(Color.magenta, "DEBUG"));
 	}
 	public log(msg: string, color?: Color): void {
-		let _msg = color ? wrap(color, msg) : msg;
-		this.output(_msg, LogType.Log);
+		const _msg = color ? wrap(color, msg) : msg;
+		this.output(console.log, _msg);
 	}
 	public panic(msg: string, code?: number): void {
 		disposeAudio(this).finally(() => {
-			this.output(wrap(Color.red, `PANIC ${msg}`), LogType.Panic);
+			this.output(console.error, msg, wrap(Color.red, "PANIC"));
 			Deno.exit(code || 1);
 		});
 	}
