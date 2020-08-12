@@ -8,6 +8,7 @@ export interface LoggerOptions {
 export class Logger {
 	private verbose: boolean;
 	private file?: string;
+	private data: string[] = [];
 
 	public constructor(options: LoggerOptions) {
 		this.verbose = options.verbose;
@@ -15,11 +16,11 @@ export class Logger {
 	}
 
 	private async output(stdout: Function, msg: string, prefix?: string): Promise<void> {
-		let args = [msg];
+		const _msg = prefix ? `${prefix} ${msg}` : msg;
 
-		if (prefix) args.unshift(prefix + " ");
+		stdout(_msg);
 
-		stdout(args.join(""));
+		if (this.file) this.data.push(_msg);
 	}
 
 	public info(msg: string): void {
@@ -32,6 +33,7 @@ export class Logger {
 		this.output(console.error, msg, wrap(Color.red, "ERROR"));
 	}
 	public debug(msg: string): void {
+		if (!this.verbose) return;
 		this.output(console.info, msg, wrap(Color.magenta, "DEBUG"));
 	}
 	public log(msg: string, color?: Color): void {
@@ -43,6 +45,12 @@ export class Logger {
 			this.output(console.error, msg, wrap(Color.red, "PANIC"));
 			Deno.exit(code || 1);
 		});
+	}
+
+	public write() {
+		if (!this.file) return;
+		this.debug("Writing log");
+		Deno.writeTextFileSync(this.file, this.data.join("\n"));
 	}
 }
 

@@ -36,5 +36,6 @@ if (options.wayland) {
 
 for await (const _ of Deno.signal(Deno.Signal.SIGINT)) {
 	await disposeAudio(logger);
+	logger.write();
 	Deno.exit();
 }
