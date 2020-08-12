@@ -34,7 +34,7 @@ export interface IExecResponse {
 	output: string;
 }
 
-export interface IOptions {
+export interface ExecOptions {
 	output?: OutputMode;
 	verbose?: boolean;
 	continueOnError?: boolean;
@@ -42,7 +42,7 @@ export interface IOptions {
 
 export const exec = async (
 	command: string,
-	options: IOptions = { output: OutputMode.Tee, verbose: false }
+	options: ExecOptions = { output: OutputMode.Tee, verbose: false }
 ): Promise<IExecResponse> => {
 	let splits = splitCommand(command);
 
@@ -106,7 +106,7 @@ export const exec = async (
 
 export const execSequence = async (
 	commands: string[],
-	options: IOptions = {
+	options: ExecOptions = {
 		output: OutputMode.StdOut,
 		continueOnError: false,
 		verbose: false,

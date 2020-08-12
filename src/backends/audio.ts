@@ -28,21 +28,19 @@ export default async function (options: Options, logger: Logger) {
 	let apps = await getUserSelectedApplications();
 	let sources = await getUserSelectedSources();
 
-	if(apps.length == 0 && sources.length == 0)
-		logger.warn("No applications, nor any sources passed. Why are you using the sound flag?")
+	if (apps.length == 0 && sources.length == 0)
+		logger.warn("No applications, nor any sources passed. Why are you using the sound flag?");
 
 	let micSink = await getSinkByModule(await createNullSink(VS_MIC, VS_MIC_DESCRIPTION));
-	
-	if(apps.length > 0) {
+
+	if (apps.length > 0) {
 		let combinedSink = await getSinkByModule(
 			await createCombinedSink("VirtualSinkAPP", `Mon2CamCombinedSink`, [micSink.name, DEFAULT_SINK])
 		);
 		for (const app of apps) {
 			await moveSinkInput(app, combinedSink.index);
 		}
-	}
-	else
-		logger.debug("No applications passed therefore skipping combined sink creation.");
+	} else logger.debug("No applications passed therefore skipping combined sink creation.");
 
 	sources.forEach((sources) => {
 		createLoopbackDevice(sources, micSink.index);
@@ -55,10 +53,7 @@ export default async function (options: Options, logger: Logger) {
 		return new Promise(async (resolve) => {
 			while (true) {
 				await new Promise((r) => setTimeout(r, 2000)); // Wait for 2 seconds
-				let cmd = await exec("pactl list source-outputs", {
-					output: options.output,
-					verbose: options.output == OutputMode.Tee,
-				});
+				let cmd = await exec("pactl list source-outputs", options.execOptions);
 				let parsed = parseOutput(cmd.output);
 				parsed.forEach((recording) => {
 					// Find the discord recording, switch to the recording sink and then exit the loop
@@ -73,10 +68,7 @@ export default async function (options: Options, logger: Logger) {
 
 	async function getSinks(): Promise<Sink[]> {
 		return new Promise(async (resolve) => {
-			let cmd = await exec("pactl list short sinks", {
-				output: options.output,
-				verbose: options.output == OutputMode.Tee,
-			});
+			let cmd = await exec("pactl list short sinks", options.execOptions);
 			if (cmd.status.success) {
 				let lines = cmd.output.split("\n");
 				let sinks: Sink[] = [];
@@ -94,10 +86,7 @@ export default async function (options: Options, logger: Logger) {
 
 	async function getSink(identifier: string | number): Promise<Sink> {
 		return new Promise(async (resolve) => {
-			let cmd = await exec("pactl list short sinks", {
-				output: options.output,
-				verbose: options.output == OutputMode.Tee,
-			});
+			let cmd = await exec("pactl list short sinks", options.execOptions);
 			if (cmd.status.success) {
 				let lines = cmd.output.split("\n");
 				lines.forEach((line) => {
@@ -120,7 +109,7 @@ export default async function (options: Options, logger: Logger) {
 
 	async function getSinkByModule(moduleIndex: number): Promise<Sink> {
 		return new Promise(async (resolve) => {
-			let cmd = await exec("pactl list sinks", { output: options.output, verbose: options.output == OutputMode.Tee });
+			let cmd = await exec("pactl list sinks", options.execOptions);
 			if (cmd.status.success) {
 				let parsed = parseOutput(cmd.output);
 				parsed.forEach((sink) => {
@@ -148,7 +137,7 @@ export default async function (options: Options, logger: Logger) {
 		return new Promise(async (resolve) => {
 			let cmd = await exec(
 				`pactl load-module module-null-sink sink_name="${name}" sink_properties=device.description="${description}"`,
-				{ output: options.output, verbose: options.output == OutputMode.Tee }
+				options.execOptions
 			);
 			if (cmd.status.success) {
 				createdModules.push(parseInt(cmd.output));
@@ -166,7 +155,7 @@ export default async function (options: Options, logger: Logger) {
 			if (slaves.length == 0) logger.panic("Zero slaves passed to createCombinedSink");
 			let cmd = await exec(
 				`pactl load-module module-combine-sink sink_name="${name}" slaves="${slaves.join()}" sink_properties=device.description="${description}"`,
-				{ output: options.output, verbose: options.output == OutputMode.Tee }
+				options.execOptions
 			);
 			if (cmd.status.success) {
 				createdModules.push(parseInt(cmd.output));
@@ -182,7 +171,7 @@ export default async function (options: Options, logger: Logger) {
 		return new Promise(async (resolve) => {
 			let cmd = await exec(
 				`pactl load-module module-loopback source=${inputSource} sink=${outputSink} sink_dont_move=true source_dont_move=true`,
-				{ output: options.output, verbose: options.output == OutputMode.Tee }
+				options.execOptions
 			);
 			if (cmd.status.success) {
 				createdModules.push(parseInt(cmd.output));
@@ -203,10 +192,7 @@ export default async function (options: Options, logger: Logger) {
 
 	async function moveSinkInput(inputIndex: number, outputSink: number): Promise<void> {
 		return new Promise(async (resolve) => {
-			let cmd = await exec(`pactl move-sink-input ${inputIndex} ${outputSink}`, {
-				output: options.output,
-				verbose: options.output == OutputMode.Tee,
-			});
+			let cmd = await exec(`pactl move-sink-input ${inputIndex} ${outputSink}`, options.execOptions);
 
 			if (cmd.status.success) {
 				logger.debug(`Moved sink-input (${inputIndex}) to sink number ${outputSink}`);
@@ -223,10 +209,7 @@ export default async function (options: Options, logger: Logger) {
 	// Choose where to record from
 	async function moveSourceOutput(recordingIndex: number, source: string): Promise<void> {
 		return new Promise(async (resolve) => {
-			let cmd = await exec(`pactl move-source-output ${recordingIndex} ${source}`, {
-				output: options.output,
-				verbose: options.output == OutputMode.Tee,
-			});
+			let cmd = await exec(`pactl move-source-output ${recordingIndex} ${source}`, options.execOptions);
 			if (cmd.status.success) {
 				logger.debug(`Moved source-output (${recordingIndex}) to source ${source}`);
 				resolve();
@@ -242,8 +225,7 @@ export default async function (options: Options, logger: Logger) {
 	async function checkIfWhitelistContainsIndex(whitelist: ParsedOutputElement[], index: number): Promise<boolean> {
 		for (let i = 0; i < whitelist.length; i++) {
 			const element = whitelist[i];
-			if(element.index == index)
-				return true;
+			if (element.index == index) return true;
 		}
 		return false;
 	}
@@ -268,28 +250,23 @@ export default async function (options: Options, logger: Logger) {
 
 	async function getUserSelectedApplications(): Promise<number[]> {
 		return new Promise(async (resolve) => {
-			let cmd = await exec("pactl list sink-inputs", {
-				output: options.output,
-				verbose: options.output == OutputMode.Tee,
-			});
+			let cmd = await exec("pactl list sink-inputs", options.execOptions);
 			let parsed = parseOutput(cmd.output);
 			let validApps: ParsedOutputElement[] = [];
 			let whitelist: number[] = [];
 
 			parsed.forEach((sinkInput) => {
 				// If the input is an application
-				if (sinkInput.properties["application.name"])
-					validApps.push(sinkInput);
+				if (sinkInput.properties["application.name"]) validApps.push(sinkInput);
 			});
-			if(validApps.length > 0) {
+			if (validApps.length > 0) {
 				validApps.forEach((sinkInput) => {
 					let app_name = sinkInput.properties["application.name"].replace(/"/g, "");
 					logger.log(`${Color.yellow}${sinkInput.index}:${Color.reset} ${app_name}`);
 				});
 				logger.log("Choose which applications you want to route(space separated list):", Color.yellow);
 				resolve(await getUserInputtedIndexList(validApps));
-			}
-			else {
+			} else {
 				logger.info("No valid applications found");
 				resolve([]);
 			}
@@ -298,25 +275,23 @@ export default async function (options: Options, logger: Logger) {
 
 	async function getUserSelectedSources(): Promise<number[]> {
 		return new Promise(async (resolve) => {
-			let cmd = await exec("pactl list sources", { output: options.output, verbose: options.output == OutputMode.Tee });
-			
+			let cmd = await exec("pactl list sources", options.execOptions);
+
 			let parsed = parseOutput(cmd.output);
 			let validSources: ParsedOutputElement[] = [];
 			parsed.forEach((source) => {
 				// If the source is an actual physical device
-				console.log(source)
-				if (source.arguments["Name"] && !source.arguments["Name"].endsWith(".monitor"))
-					validSources.push(source);
+				console.log(source);
+				if (source.arguments["Name"] && !source.arguments["Name"].endsWith(".monitor")) validSources.push(source);
 			});
-			if(validSources.length > 0) {
+			if (validSources.length > 0) {
 				validSources.forEach((source) => {
 					let source_name = source.properties["device.product.name"].replace(/"/g, "");
 					logger.log(`${Color.yellow}${source.index}:${Color.reset} ${source_name}`);
 				});
 				logger.log("Choose which sources you want to route(space separated list):", Color.yellow);
 				resolve(await getUserInputtedIndexList(validSources));
-			}
-			else {
+			} else {
 				logger.info("No valid sources found");
 				resolve([]);
 			}

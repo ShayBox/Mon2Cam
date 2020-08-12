@@ -87,5 +87,5 @@ export default async function (options: Options, logger: Logger) {
 		"-f v4l2",
 		`/dev/video${options.device}`,
 	];
-	await exec(commandLines.join(" "), options);
+	await exec(commandLines.join(" "), options.execOptions);
 }

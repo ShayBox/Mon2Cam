@@ -1,4 +1,5 @@
-import { OutputMode } from "./exec.ts";
+import { LoggerOptions } from "./logging.ts";
+import { ExecOptions, OutputMode } from "./exec.ts";
 import { parse } from "https://deno.land/std@0.62.0/flags/mod.ts";
 
 export default class Options {
@@ -6,12 +7,13 @@ export default class Options {
 	public device: number = 50;
 	public monitor?: number;
 	public resolution: string = "";
+	public verboseFile?: string;
 	public ffmpeg: string[] = [];
 	public border: boolean = false;
 	public sound: boolean = false;
 	public wayland: boolean = false;
-	public verbose: boolean = false;
-	public output: OutputMode = OutputMode.Capture;
+	public loggerOptions: LoggerOptions = { verbose: false };
+	public execOptions: ExecOptions = { verbose: false, output: OutputMode.Capture };
 
 	constructor(args: string[]) {
 		const alias = {
@@ -63,8 +65,11 @@ export default class Options {
 		if (typeof p.border === "boolean") this.border = p.border;
 		if (typeof p.sound === "boolean") this.sound = p.sound;
 		if (typeof p.verbose === "boolean") {
-			this.verbose = true;
-			this.output = OutputMode.Tee;
+			this.loggerOptions = { verbose: true };
+			this.execOptions = { verbose: true, output: OutputMode.Tee };
+		} else if (typeof p.verbose === "string") {
+			this.loggerOptions = { verbose: true, file: p.verbose };
+			this.execOptions = { verbose: true, output: OutputMode.Tee };
 		}
 	}
 }

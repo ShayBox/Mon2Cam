@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --unstable --allow-run --allow-read --allow-env
+#!/usr/bin/env -S deno run --unstable -A
 
 import { exec } from "./libraries/exec.ts";
 import { Logger } from "./libraries/logging.ts";
@@ -8,12 +8,12 @@ import startX11 from "./backends/x11.ts";
 import startSound, { dispose as disposeAudio } from "./backends/audio.ts";
 
 const options = new Options(Deno.args);
-const logger = new Logger(options.verbose);
+const logger = new Logger(options.loggerOptions);
 
 await Deno.stat("/dev/video" + options.device).catch(async (error) => {
 	if (error instanceof Deno.errors.NotFound) {
-		await exec("sudo modprobe -r v4l2loopback", options);
-		await exec(`sudo modprobe v4l2loopback video_nr=${options.device} 'card_label=Mon2Cam'`, options);
+		await exec("sudo modprobe -r v4l2loopback", options.execOptions);
+		await exec(`sudo modprobe v4l2loopback video_nr=${options.device} 'card_label=Mon2Cam'`, options.execOptions);
 	} else logger.error(error);
 });
 
