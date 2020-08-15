@@ -5,6 +5,7 @@ import Options from "../libraries/options.ts";
 
 interface XMonitorInfo {
 	index: string;
+	name: string;
 	height: string;
 	width: string;
 	x: string;
@@ -12,17 +13,18 @@ interface XMonitorInfo {
 }
 
 function getMonitorInfo(xrandr: string): XMonitorInfo {
-	const regexGroups = /([\d]+): \+[\*]?[\d\w\-]+ ([\d]+)\/([\d]+)x([\d]+)\/([\d]+)\+([\d]+)\+([\d]+)/.exec(xrandr);
+	const regexGroups = /([\d]+): \+[\*]?([\d\w\-]+) ([\d]+)\/([\d]+)x([\d]+)\/([\d]+)\+([\d]+)\+([\d]+)/.exec(xrandr);
 	if (!regexGroups || regexGroups.length < 7) {
 		throw new Error("Xrandr output has changed and this code needs updated");
 	}
 
 	return {
 		index: regexGroups[1],
-		height: regexGroups[4],
-		width: regexGroups[2],
-		x: regexGroups[6],
-		y: regexGroups[7],
+		name: regexGroups[2],
+		height: regexGroups[5],
+		width: regexGroups[3],
+		x: regexGroups[7],
+		y: regexGroups[8],
 	};
 }
 
@@ -36,7 +38,7 @@ export default async function (options: Options, logger: Logger) {
 	if (typeof options.monitor !== "number") {
 		const monitors = lines.map((line) => getMonitorInfo(line));
 		for (const monitor of monitors) {
-			logger.log(`${wrap(Color.yellow, monitor.index)}: ${monitor.width}x${monitor.height}`);
+			logger.log(`${wrap(Color.yellow, monitor.index)}: ${monitor.width}x${monitor.height} ${wrap(Color.dim, monitor.name)}`);
 		}
 		logger.log("Which monitor?", Color.yellow);
 
