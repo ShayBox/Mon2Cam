@@ -13,7 +13,7 @@ interface XMonitorInfo {
 }
 
 function getMonitorInfo(xrandr: string): XMonitorInfo {
-	const regexGroups = /([\d]+): \+[\*]?([\d\w\-]+) ([\d]+)\/([\d]+)x([\d]+)\/([\d]+)\+([\d]+)\+([\d]+)/.exec(xrandr);
+	const regexGroups = /([\d]+): \+[\*]?([\d\w\-\.]+) ([\d]+)\/([\d]+)x([\d]+)\/([\d]+)\+([\d]+)\+([\d]+)/.exec(xrandr);
 	if (!regexGroups || regexGroups.length < 7) {
 		throw new Error("Xrandr output has changed and this code needs updated");
 	}
@@ -38,7 +38,9 @@ export default async function (options: Options, logger: Logger) {
 	if (typeof options.monitor !== "number") {
 		const monitors = lines.map((line) => getMonitorInfo(line));
 		for (const monitor of monitors) {
-			logger.log(`${wrap(Color.yellow, monitor.index)}: ${monitor.width}x${monitor.height} ${wrap(Color.dim, monitor.name)}`);
+			logger.log(
+				`${wrap(Color.yellow, monitor.index)}: ${monitor.width}x${monitor.height} ${wrap(Color.dim, monitor.name)}`
+			);
 		}
 		logger.log("Which monitor?", Color.yellow);
 
