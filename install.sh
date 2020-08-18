@@ -8,7 +8,7 @@ case $SHELL in
     LOCATION=~/.bashrc
   ;;
 
-  /bin/zsh)
+  /bin/zsh|/usr/bin/zsh)
     LOCATION=~/.zshrc
   ;;
 
