@@ -3,13 +3,12 @@
 import { exec } from "./libraries/exec.ts";
 import { Logger } from "./libraries/logging.ts";
 import Options from "./libraries/options.ts";
-import startWayland from "./backends/x11.ts";
+import startWayland from "./backends/wayland.ts";
 import startX11 from "./backends/x11.ts";
 import startSound, { dispose as disposeAudio } from "./backends/audio.ts";
 
 const options = new Options(Deno.args);
 const logger = new Logger(options.loggerOptions);
-
 await Deno.stat("/dev/video" + options.device).catch(async (error) => {
 	if (error instanceof Deno.errors.NotFound) {
 		await exec("sudo modprobe -r v4l2loopback", options.execOptions);
@@ -29,8 +28,10 @@ if (!options.wayland) {
 
 if (options.sound) await startSound(options, logger);
 if (options.wayland) {
+	logger.info("Wayland detected, running wayland backend.");
 	startWayland(options, logger);
 } else {
+	logger.info("X11 detected, running x11 backend. (use -w to force wayland)")
 	startX11(options, logger);
 }
 
