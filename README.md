@@ -55,11 +55,9 @@ INFO The screen will look mirrored for you, not others
 
 ## Audio routing
 
-There is a built in audio streaming feature, but it's quite **experimental**. It uses _pulseaudio_ to route the audio of your microphone (or any other input) and the sound of any selected output(application) into a virtual sink which then you can select as an input in discord.
+There is audio routing built into Mon2Cam, which you can use with the -s flag. It's interactive, so it's not hard to use, but keep in mind that it may still have bugs. Also, it probably introduces some latency, however this wasn't tested and is probably quite tiny. (I haven't noticed any difference.)
 
-To use, pass the `-s` option, select the appropriate applications and sources (You have to pass a space separated list of ids, or a single id). Then, set the default recording device to be the VirtualSink Monitor and then instruct discord to record from the monitor of the VirtualSink. After this, you should disable noise cancellation and noise reduction in discord, to achieve a good quality stream.
-
-Also **note** that in the current implementation, if you use this feature, you won't be able to hear the selected application(s), only the people listening to the stream. You can workaround this by using a command like: `ffplay -f pulse -i default -nodisp` and then changing the recorded source in _pavucontrol_, however you will also hear any inputs that you might have passed (so if you passed your microphone, you will hear yourself).
+Mon2Cam will try to detect if discord is trying to record, and then switch it's input to the Mon2Cam combined sink, but you may have to do it manually. You should also disable echo cancellation, because discord will detect most audio as echo.
 
 ![Screenshot_Pavucontrol](images/pavucontrol.png)
 
