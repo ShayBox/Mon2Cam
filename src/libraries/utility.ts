@@ -17,3 +17,16 @@ export async function checkDependency(command: string, logger: Logger) {
 		}
 	});
 }
+
+const supported_resolutions = [[1920, 1080], [1280, 720], [640, 480]];
+export function check_resolution(logger: Logger, selected_x: number, selected_y: number) {
+	let found_compatible = false;
+	for(const [x,y] of supported_resolutions ) {
+		if(x == selected_x && y == selected_y) {
+			found_compatible = true;
+			break;
+		}
+	}
+	if(!found_compatible)
+		logger.warn(`The selected resolution (${selected_x}:${selected_y}) may not be supported by discord. Please use the -r flag to change the resolution, if needed.`)
+}
