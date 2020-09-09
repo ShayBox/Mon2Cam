@@ -58,31 +58,17 @@ export const exec = async (
 
 	let p = Deno.run({ cmd: splits, stdout: "piped", stderr: "piped" });
 
-	let response = "";
-	let decoder = new TextDecoder();
-
+	let promises = [];
 	if (p && options.output != OutputMode.None) {
-		const buff = new Uint8Array(1);
-
-		while (true) {
-			try {
-				let result = await p.stdout?.read(buff);
-				if (!result) {
-					break;
-				}
-
-				if (options.output == OutputMode.Capture || options.output == OutputMode.Tee) {
-					response = response + decoder.decode(buff);
-				}
-
-				if (options.output == OutputMode.StdOut || options.output == OutputMode.Tee) {
-					await Deno.stdout.write(buff);
-				}
-			} catch (ex) {
-				break;
-			}
-		}
+		promises.push(readInput(p, inputType.STDIN));
+		
+		// If the verbose flag is set, output the stderr as well
+		if(options.verbose)
+			promises.push(readInput(p, inputType.STDERR));	
 	}
+
+	let promiseResults = Promise.all(promises);
+	let response = (await promiseResults).join("\n"); // Join STDIN and STDOUT with a line break between them
 
 	let status = await p.status();
 	p.stdout?.close();
@@ -124,3 +110,34 @@ export const execSequence = async (
 
 	return results;
 };
+
+const decoder = new TextDecoder();
+async function readInput(p: any, type: inputType): Promise<string> {
+	let response = "";
+	while (true) {
+		const buff = new Uint8Array(1);
+		try {
+			let result;
+			if(type == inputType.STDIN)
+				result = await p.stdout?.read(buff);
+			else if(type == inputType.STDERR)
+				result = await p.stderr?.read(buff);
+			else
+				console.log("UNSUPPORTED INPUTTYPE, UPDATE CODE");
+
+			if (!result) {
+				break;
+			}
+
+			response += decoder.decode(buff);
+		} catch (ex) {
+			break;
+		}
+	}
+	return response;
+}
+
+enum inputType {
+	STDIN,
+	STDERR
+}

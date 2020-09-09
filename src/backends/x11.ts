@@ -1,5 +1,5 @@
 import { exec } from "../libraries/exec.ts";
-import { readStdin, checkDependency, check_resolution } from "../libraries/utility.ts";
+import { readStdin, checkDependency, checkResolution } from "../libraries/utility.ts";
 import { Logger, Color, wrap } from "../libraries/logging.ts";
 import Options from "../libraries/options.ts";
 
@@ -75,10 +75,10 @@ export default async function (options: Options, logger: Logger) {
 		} else {
 			options.ffmpeg.push(`-vf scale=${options.resolution}`);
 		}
-		check_resolution(logger, Number.parseInt(width), Number.parseInt(height))
+		checkResolution(logger, Number.parseInt(width), Number.parseInt(height))
 	}
 	else {
-		check_resolution(logger, Number.parseInt(monitor.width), Number.parseInt(monitor.height))
+		checkResolution(logger, Number.parseInt(monitor.width), Number.parseInt(monitor.height))
 	}
 
 	logger.info("CTRL + C to stop");
