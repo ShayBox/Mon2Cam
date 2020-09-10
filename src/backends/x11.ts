@@ -95,5 +95,7 @@ export default async function (options: Options, logger: Logger) {
 		"-f v4l2",
 		`/dev/video${options.device}`,
 	];
-	await exec(commandLines.join(" "), options.execOptions);
+	let result = await exec(commandLines.join(" "), options.execOptions);
+	if(!result.status.success)
+		logger.panic("X11 backend exited with an error.");
 }

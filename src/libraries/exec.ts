@@ -1,4 +1,5 @@
 import { v4 } from "https://deno.land/std@0.63.0/uuid/mod.ts";
+import { Logger } from "./logging.ts";
 
 function splitCommand(command: string): string[] {
 	var myRegexp = /[^\s]+|"([^"]*)"/gi;
@@ -81,6 +82,9 @@ export const exec = async (
 			success: status.success,
 		},
 		output: response.trim(),
+		[Deno.customInspect] () : string {
+			return `${Deno.inspect(this.status)},\n output: \"${this.output}\"`
+		}
 	};
 	if (options.verbose) {
 		console.log("    Exec Result: ", result);
