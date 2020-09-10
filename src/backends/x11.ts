@@ -1,5 +1,5 @@
 import { exec } from "../libraries/exec.ts";
-import { readStdin, checkDependency } from "../libraries/utility.ts";
+import { readStdin, checkDependency, checkResolution } from "../libraries/utility.ts";
 import { Logger, Color, wrap } from "../libraries/logging.ts";
 import Options from "../libraries/options.ts";
 
@@ -57,24 +57,28 @@ export default async function (options: Options, logger: Logger) {
 		options.monitor = monitor;
 	}
 
+	const monitor = getMonitorInfo(lines[options.monitor]);
+	const display = Deno.env.get("DISPLAY");
+	if (!display) {
+		logger.panic("Display env variable not defined, are you even using X?");
+		return;
+	}
+
 	if (options.resolution) {
+		const split = options.resolution.split(":");
+		const width = split[0];
+		const height = split[1];
 		if (options.border) {
-			const split = options.resolution.split(":");
-			const width = split[0];
-			const height = split[1];
 			options.ffmpeg.push(
 				`-vf scale=${options.resolution}:force_original_aspect_ratio=decrease,pad=${width}:${height}:x=(${width}-iw)/2:y=(${height}-ih)/2`
 			);
 		} else {
 			options.ffmpeg.push(`-vf scale=${options.resolution}`);
 		}
+		checkResolution(logger, Number.parseInt(width), Number.parseInt(height))
 	}
-
-	const monitor = getMonitorInfo(lines[options.monitor]);
-	const display = Deno.env.get("DISPLAY");
-	if (!display) {
-		logger.panic("Display env variable not defined, are you even using X?");
-		return;
+	else {
+		checkResolution(logger, Number.parseInt(monitor.width), Number.parseInt(monitor.height))
 	}
 
 	logger.info("CTRL + C to stop");
