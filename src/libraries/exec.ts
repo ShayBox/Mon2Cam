@@ -62,10 +62,9 @@ export const exec = async (
 	let promises = [];
 	if (p && options.output != OutputMode.None) {
 		promises.push(readInput(p, inputType.STDIN));
-		
+
 		// If the verbose flag is set, output the stderr as well
-		if(options.verbose)
-			promises.push(readInput(p, inputType.STDERR));	
+		if (options.verbose) promises.push(readInput(p, inputType.STDERR));
 	}
 
 	let promiseResults = Promise.all(promises);
@@ -82,9 +81,9 @@ export const exec = async (
 			success: status.success,
 		},
 		output: response.trim(),
-		[Deno.customInspect] () : string {
-			return `${Deno.inspect(this.status)},\n output: \"${this.output}\"`
-		}
+		[Deno.customInspect](): string {
+			return `${Deno.inspect(this.status)},\n output: \"${this.output}\"`;
+		},
 	};
 	if (options.verbose) {
 		console.log("    Exec Result: ", result);
@@ -122,12 +121,9 @@ async function readInput(p: any, type: inputType): Promise<string> {
 		const buff = new Uint8Array(1);
 		try {
 			let result;
-			if(type == inputType.STDIN)
-				result = await p.stdout?.read(buff);
-			else if(type == inputType.STDERR)
-				result = await p.stderr?.read(buff);
-			else
-				console.log("UNSUPPORTED INPUTTYPE, UPDATE CODE");
+			if (type == inputType.STDIN) result = await p.stdout?.read(buff);
+			else if (type == inputType.STDERR) result = await p.stderr?.read(buff);
+			else console.log("UNSUPPORTED INPUTTYPE, UPDATE CODE");
 
 			if (!result) {
 				break;
@@ -143,5 +139,5 @@ async function readInput(p: any, type: inputType): Promise<string> {
 
 enum inputType {
 	STDIN,
-	STDERR
+	STDERR,
 }

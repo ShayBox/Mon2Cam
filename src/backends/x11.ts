@@ -75,11 +75,9 @@ export default async function (options: Options, logger: Logger) {
 		} else {
 			options.ffmpeg.push(`-vf scale=${options.resolution}`);
 		}
-		checkResolution(logger, Number.parseInt(width), Number.parseInt(height))
 	}
-	else {
-		checkResolution(logger, Number.parseInt(monitor.width), Number.parseInt(monitor.height))
-	}
+
+	checkResolution(logger, Number.parseInt(monitor.width), Number.parseInt(monitor.height));
 
 	logger.info("CTRL + C to stop");
 	logger.info("The screen will look mirrored for you, not others");
@@ -96,6 +94,5 @@ export default async function (options: Options, logger: Logger) {
 		`/dev/video${options.device}`,
 	];
 	let result = await exec(commandLines.join(" "), options.execOptions);
-	if(!result.status.success)
-		logger.panic("X11 backend exited with an error.");
+	if (!result.status.success) logger.panic("X11 backend exited with an error.");
 }

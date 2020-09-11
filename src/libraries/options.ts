@@ -27,7 +27,7 @@ export default class Options {
 			border: "b",
 			sound: "s",
 			verbose: "v",
-			wayland: "w"
+			wayland: "w",
 		};
 		const p = parse(args, { alias });
 

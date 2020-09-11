@@ -18,9 +18,16 @@ export async function checkDependency(command: string, logger: Logger) {
 	});
 }
 
-const supported_resolutions = [[1920, 1080], [1280, 720], [640, 480]];
+export const supportedResolutions = [
+	[1920, 1080],
+	[1280, 720],
+	[640, 480],
+];
+
 export function checkResolution(logger: Logger, selected_x: number, selected_y: number) {
-	if(!supported_resolutions.some(([x,y]) => x == selected_x && y == selected_y)) {
-		logger.warn(`The selected resolution (${selected_x}:${selected_y}) may not be supported by discord. Please use the -r flag to change the resolution, if needed.`)
+	if (!supportedResolutions.some(([x, y]) => x == selected_x && y == selected_y)) {
+		logger.warn(
+			`The selected resolution (${selected_x}:${selected_y}) may not be supported by discord. Please use the -r flag to change the resolution, if needed.`
+		);
 	}
 }

@@ -31,7 +31,7 @@ if (options.wayland) {
 	logger.info("Wayland detected, running wayland backend.");
 	startWayland(options, logger);
 } else {
-	logger.info("X11 detected, running x11 backend. (use -w to force wayland)")
+	logger.info("X11 detected, running x11 backend. (use -w to force wayland)");
 	startX11(options, logger);
 }
 
