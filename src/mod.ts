@@ -9,12 +9,27 @@ import startSound, { dispose as disposeAudio } from "./backends/audio.ts";
 
 const options = new Options(Deno.args);
 const logger = new Logger(options.loggerOptions);
-await Deno.stat("/dev/video" + options.device).catch(async (error) => {
-	if (error instanceof Deno.errors.NotFound) {
-		await exec("sudo modprobe -r v4l2loopback", options.execOptions);
-		await exec(`sudo modprobe v4l2loopback video_nr=${options.device} 'card_label=Mon2Cam'`, options.execOptions);
-	} else logger.error(error);
-});
+
+logger.debug(`Starting Mon2Cam with the following options: ${Deno.inspect(options)}`);
+logger.debug("Checking if V4L2 device exists");
+await Deno.stat("/dev/video" + options.device)
+	.then(() => {
+		logger.debug(`V4L2 device found with id ${options.device}`);
+	})
+	.catch(async (error) => {
+		if (error instanceof Deno.errors.NotFound) {
+			logger.debug(`V4L2 device not found with id ${options.device}, creating it`);
+			let rem = await exec("sudo modprobe -r v4l2loopback", options.execOptions);
+			let ins = await exec(
+				`sudo modprobe v4l2loopback video_nr=${options.device} 'card_label=Mon2Cam'`,
+				options.execOptions
+			);
+			if (!rem.status.success || !ins.status.success) {
+				logger.panic(`Failed to create V4L2 device with id ${options.device}`);
+			}
+			logger.debug(`V4L2 device created with id ${options.device}`);
+		} else logger.error(error);
+	});
 
 if (!options.wayland) {
 	await exec("xisxwayland", { output: 3 })
