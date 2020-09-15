@@ -5,8 +5,8 @@ Fix for multi-monitor Discord screensharing
 ## Dependencies:
 
 - [Deno]
-- [xrandr](X11)
-- [ffmpeg](X11) or [wf-recorder](wlroots)
+- [xrandr] (X11)
+- [ffmpeg] (X11) or [wf-recorder] (wlroots)
 - [v4l2loopback] 0.12+
 
 Note:
