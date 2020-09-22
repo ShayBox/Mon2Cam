@@ -1,6 +1,6 @@
 import { Logger, Color } from "../libraries/logging.ts";
 import { exec, OutputMode } from "../libraries/exec.ts";
-import Options from "../libraries/options.ts";
+import type Options from "../libraries/options.ts";
 import { readStdin } from "../libraries/utility.ts";
 
 /*

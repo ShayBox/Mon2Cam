@@ -1,5 +1,5 @@
-import { Logger } from "../libraries/logging.ts";
-import Options from "../libraries/options.ts";
+import type { Logger } from "../libraries/logging.ts";
+import type Options from "../libraries/options.ts";
 import { checkDependency } from "../libraries/utility.ts";
 import { exec } from "../libraries/exec.ts";
 

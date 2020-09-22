@@ -1,4 +1,4 @@
-import { LoggerOptions } from "./logging.ts";
+import type { LoggerOptions } from "./logging.ts";
 import { ExecOptions, OutputMode } from "./exec.ts";
 import { parse } from "https://deno.land/std@0.62.0/flags/mod.ts";
 
