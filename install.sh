@@ -4,7 +4,7 @@
 INSERT='alias mon2cam="deno run --unstable -A -r -q https://raw.githubusercontent.com/ShayBox/Mon2Cam/master/src/mod.ts"'
 
 case $SHELL in
-  /bin/bash)
+  /bin/bash|/usr/bin/bash)
     LOCATION=~/.bashrc
   ;;
 
@@ -18,5 +18,6 @@ case $SHELL in
   ;;
 esac
 
-echo "Installing alias for $SHELL"
 echo $INSERT >> $LOCATION
+echo "Installed alias for $SHELL"
+echo "Reload your shell"
