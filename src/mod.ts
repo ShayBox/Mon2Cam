@@ -44,6 +44,7 @@ if (!options.wayland) {
 if (options.sound) await startSound(options, logger);
 if (options.wayland) {
 	logger.info("Wayland detected, to use X11 add -x");
+	logger.info("Many flags do not work with wayland, look in help for more info");
 	startWayland(options, logger);
 } else {
 	logger.info("X11 detected, to use Wayland add -w");
