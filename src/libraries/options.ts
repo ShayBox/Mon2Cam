@@ -28,6 +28,7 @@ export default class Options {
 			sound: "s",
 			verbose: "v",
 			wayland: "w",
+			x11: "x",
 		};
 		const p = parse(args, { alias });
 
@@ -48,7 +49,8 @@ export default class Options {
 					"-hf, --hflip,      Horizontally flip the camera",
 					"-b,  --border,     Add border when scaling to avoid stretching",
 					"-s,  --sound,      Create virtual sink and route sound into it",
-					"-w   --wayland     Force the use of the wayland backend (Useful when it's not detected)",
+					"-w   --wayland     Force the use of the wayland backend",
+					"-x   --x11     Force the use of the X11 backend",
 					"-v,  --verbose,    Show verbose output",
 					"",
 					"To find out more, visit https://github.com/shaybox/mon2cam",
@@ -66,7 +68,8 @@ export default class Options {
 		if (typeof p.hflip === "boolean") this.ffmpeg.push("-vf hflip");
 		if (typeof p.border === "boolean") this.border = p.border;
 		if (typeof p.sound === "boolean") this.sound = p.sound;
-		if (typeof p.wayland === "boolean") this.wayland = p.wayland;
+		if (typeof p.wayland === "boolean") this.wayland = true;
+		if (typeof p.x11 === "boolean") this.wayland = false;
 		if (typeof p.verbose === "boolean") {
 			this.loggerOptions = { verbose: true };
 			this.execOptions = { verbose: true, output: OutputMode.Tee };

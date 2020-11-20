@@ -57,7 +57,7 @@ export const exec = async (
 		console.log(`    Exec Command Splits:  [${splits}]`);
 	}
 
-	let p = Deno.run({ cmd: splits, stdout: "piped", stderr: "piped" });
+	let p = Deno.run({ cmd: splits, stdout: "piped", stderr: "piped", env: { LANG: "C" } });
 
 	let promises = [];
 	if (p && options.output != OutputMode.None) {

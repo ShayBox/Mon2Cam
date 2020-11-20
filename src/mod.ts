@@ -21,7 +21,7 @@ await Deno.stat("/dev/video" + options.device)
 			logger.debug(`V4L2 device not found with id ${options.device}, creating it`);
 			let rem = await exec("sudo modprobe -r v4l2loopback", options.execOptions);
 			let ins = await exec(
-				`sudo modprobe v4l2loopback video_nr=${options.device} 'card_label=Mon2Cam'`,
+				`sudo modprobe v4l2loopback video_nr=${options.device} card_label="Mon2Cam"`,
 				options.execOptions
 			);
 			if (!rem.status.success || !ins.status.success) {
@@ -43,10 +43,10 @@ if (!options.wayland) {
 
 if (options.sound) await startSound(options, logger);
 if (options.wayland) {
-	logger.info("Wayland detected, running wayland backend.");
+	logger.info("Wayland detected, to use X11 add -x");
 	startWayland(options, logger);
 } else {
-	logger.info("X11 detected, running x11 backend. (use -w to force wayland)");
+	logger.info("X11 detected, to use Wayland add -w");
 	startX11(options, logger);
 }
 
