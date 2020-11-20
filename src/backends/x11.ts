@@ -6,8 +6,8 @@ import type Options from "../libraries/options.ts";
 interface XMonitorInfo {
 	index: string;
 	name: string;
-	height: string;
-	width: string;
+	height: number;
+	width: number;
 	x: string;
 	y: string;
 }
@@ -21,8 +21,8 @@ function getMonitorInfo(xrandr: string): XMonitorInfo {
 	return {
 		index: regexGroups[1],
 		name: regexGroups[2],
-		height: regexGroups[5],
-		width: regexGroups[3],
+		height: parseInt(regexGroups[5], 10),
+		width: parseInt(regexGroups[3], 10),
 		x: regexGroups[7],
 		y: regexGroups[8],
 	};
@@ -83,7 +83,7 @@ export default async function (options: Options, logger: Logger) {
 		}
 	}
 
-	checkResolution(logger, Number.parseInt(monitor.width), Number.parseInt(monitor.height));
+	checkResolution(logger, monitor.width, monitor.height);
 
 	logger.info("CTRL + C to stop");
 	logger.info("The screen will look mirrored for you, not others");
