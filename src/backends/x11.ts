@@ -37,6 +37,12 @@ export default async function (options: Options, logger: Logger) {
 
 	if (typeof options.monitor !== "number") {
 		const monitors = lines.map((line) => getMonitorInfo(line));
+
+		if (monitors.length <= 1) {
+			options.monitor = 0;
+			return;
+		}
+
 		for (const monitor of monitors) {
 			logger.log(
 				`${wrap(Color.yellow, monitor.index)}: ${monitor.width}x${monitor.height} ${wrap(Color.dim, monitor.name)}`
