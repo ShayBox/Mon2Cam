@@ -11,6 +11,10 @@ case $SHELL in
   /bin/zsh|/usr/bin/zsh)
     LOCATION=~/.zshrc
   ;;
+  
+  /bin/fish|/usr/bin/fish)
+    LOCATION=~/.config/fish/config.fish
+    ;;
 
   *)
     echo "Unknown shell $SHELL"
