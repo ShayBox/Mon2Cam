@@ -77,10 +77,10 @@ export default async function (options: Options, logger: Logger) {
 					sinks.push({ index: parseInt(s[0]), name: s[1], module: s[2], mix: s[3], status: s[4] });
 				});
 				resolve(sinks);
-			} else {
-				logger.panic(`An error occured while trying to list the sinks`, cmd.status.code);
 			}
-			resolve(undefined);
+
+			logger.panic(`An error occured while trying to list the sinks`, cmd.status.code);
+			reject();
 		});
 	}
 
