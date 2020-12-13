@@ -67,7 +67,7 @@ export default async function (options: Options, logger: Logger) {
 	}
 
 	async function getSinks(): Promise<Sink[]> {
-		return new Promise(async (resolve) => {
+		return new Promise(async (resolve, reject) => {
 			let cmd = await exec("pactl list short sinks", options.execOptions);
 			if (cmd.status.success) {
 				let lines = cmd.output.split("\n");
