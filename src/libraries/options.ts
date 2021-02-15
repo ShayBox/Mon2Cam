@@ -54,7 +54,7 @@ export default class Options {
 					"-w   --wayland     Force the use of the wayland backend",
 					"-x   --x11         Force the use of the X11 backend",
 					"-v,  --verbose,    Show verbose output",
-					"-e, --hwenc,      Use hardware encoding",
+					"-e, --hwenc,      Use hardware encoding. You can get a list of supported encoders using \"ffmpec -hwaccels\"",
 					"",
 					"Flags with * do not work with wayland",
 					"Wayland support is only for wlroots compositors",
