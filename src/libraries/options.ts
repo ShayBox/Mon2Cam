@@ -3,6 +3,7 @@ import { ExecOptions, OutputMode } from "./exec.ts";
 import { parse } from "https://deno.land/std@0.62.0/flags/mod.ts";
 
 export default class Options {
+	public hwEncoder?: string;
 	public framerate: number = 60;
 	public device: number = 50;
 	public monitor?: number;
@@ -29,6 +30,7 @@ export default class Options {
 			verbose: "v",
 			wayland: "w",
 			x11: "x",
+			hwenc: "e",
 		};
 		const p = parse(args, { alias });
 
@@ -52,6 +54,7 @@ export default class Options {
 					"-w   --wayland     Force the use of the wayland backend",
 					"-x   --x11         Force the use of the X11 backend",
 					"-v,  --verbose,    Show verbose output",
+					"-e, --hwenc,      Use hardware encoding",
 					"",
 					"Flags with * do not work with wayland",
 					"Wayland support is only for wlroots compositors",
@@ -72,6 +75,7 @@ export default class Options {
 		if (typeof p.sound === "boolean") this.sound = p.sound;
 		if (typeof p.wayland === "boolean") this.wayland = true;
 		if (typeof p.x11 === "boolean") this.wayland = false;
+		if (typeof p.hwenc === "string") this.hwEncoder = p.hwenc;
 		if (typeof p.verbose === "boolean") {
 			this.loggerOptions = { verbose: true };
 			this.execOptions = { verbose: true, output: OutputMode.Tee };
