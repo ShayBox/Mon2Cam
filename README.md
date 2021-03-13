@@ -14,7 +14,7 @@ Ubuntu 18.04 and below does not provide v4l2loopback 0.12, if you use older vers
 
 ## Instructions:
 
-- Install [Deno]
+- Install [Deno]  ***DO NOT USE UBUNTU SNAP***
 - Run `curl -s https://raw.githubusercontent.com/ShayBox/Mon2Cam/master/install.sh | sh`
 - Open a new terminal and type `mon2cam`
 - Switch discord webcam
@@ -66,3 +66,4 @@ Mon2Cam will try to detect if discord is trying to record, and then switch it's 
 [ffmpeg]: http://ffmpeg.org/
 [v4l2loopback]: https://github.com/umlaeute/v4l2loopback
 [aur]: https://aur.archlinux.org/packages/mon2cam-git/
+[wf-recorder]: https://github.com/ammen99/wf-recorder
