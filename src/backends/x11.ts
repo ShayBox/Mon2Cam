@@ -85,6 +85,25 @@ export default async function (options: Options, logger: Logger) {
 
 	checkResolution(logger, monitor.width, monitor.height);
 
+	let enableHwEnc = false;
+
+    if (options.hwEncoder) {
+        //check if hw encoding is supported
+
+
+        //get encoders supported by systm
+        let output = (await exec("ffmpeg -hwaccels")).output;
+        let supportredEncoders = output.split("\n").slice(1)
+
+        //check if the specified encoder is supported
+        if (supportredEncoders.indexOf(options.hwEncoder) < 0) {
+            logger.panic(`Hardware encoder ${options.hwEncoder} is not supported. Aborting.`);
+            return;
+        }
+        enableHwEnc = true;
+    }
+
+
 	logger.info("CTRL + C to stop");
 	logger.info("The screen will look mirrored for you, not others");
 
@@ -99,6 +118,13 @@ export default async function (options: Options, logger: Logger) {
 		"-f v4l2",
 		`/dev/video${options.device}`,
 	];
+
+	//insert the hardware encoder
+    if (enableHwEnc){
+        commandLines.splice(1,0, `-hwaccel ${options.hwEncoder}`);
+        logger.debug("Using specified hardware encoder");
+    }
+
 	let result = await exec(commandLines.join(" "), options.execOptions);
 	if (!result.status.success) logger.panic("X11 backend exited with an error.");
 }
