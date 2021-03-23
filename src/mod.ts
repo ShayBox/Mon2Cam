@@ -19,9 +19,9 @@ await Deno.stat("/dev/video" + options.device)
 	.catch(async (error) => {
 		if (error instanceof Deno.errors.NotFound) {
 			logger.debug(`V4L2 device not found with id ${options.device}, creating it`);
-			let rem = await exec("sudo modprobe -r v4l2loopback", options.execOptions);
+			let rem = await exec("sudo modprobe -r v4l2loopback | doas modeprobe -r v4l2loopback", options.execOptions);
 			let ins = await exec(
-				`sudo modprobe v4l2loopback video_nr=${options.device} card_label="Mon2Cam"`,
+				`sudo modprobe v4l2loopback video_nr=${options.device} card_label="Mon2Cam" | doas modprobe v4l2loopback video_nr=${options.device} card_label="Mon2Cam"`,
 				options.execOptions
 			);
 			if (!rem.status.success || !ins.status.success) {
