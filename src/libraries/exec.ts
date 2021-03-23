@@ -1,5 +1,4 @@
 import { v4 } from "https://deno.land/std@0.63.0/uuid/mod.ts";
-import { Logger } from "./logging.ts";
 
 function splitCommand(command: string): string[] {
 	var myRegexp = /[^\s]+|"([^"]*)"/gi;
@@ -39,6 +38,7 @@ export interface ExecOptions {
 	output?: OutputMode;
 	verbose?: boolean;
 	continueOnError?: boolean;
+	out?: "inherit" | "piped" | "null" | number;
 }
 
 export const exec = async (
@@ -57,7 +57,8 @@ export const exec = async (
 		console.log(`    Exec Command Splits:  [${splits}]`);
 	}
 
-	let p = Deno.run({ cmd: splits, stdout: "piped", stderr: "piped", env: { LANG: "C" } });
+	let out = options.out || "piped";
+	let p = Deno.run({ cmd: splits, stdout: out, stderr: out, env: { LANG: "C" } });
 
 	let promises = [];
 	if (p && options.output != OutputMode.None) {

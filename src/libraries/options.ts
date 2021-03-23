@@ -1,6 +1,6 @@
 import type { LoggerOptions } from "./logging.ts";
 import { ExecOptions, OutputMode } from "./exec.ts";
-import { parse } from "https://deno.land/std@0.62.0/flags/mod.ts";
+import { parse } from "https://deno.land/std@0.91.0/flags/mod.ts";
 
 export default class Options {
 	public hwEncoder?: string;
