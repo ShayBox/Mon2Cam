@@ -25,6 +25,12 @@ let createdModules: Number[] = [];
 export default async function (options: Options, logger: Logger) {
 	// TODO: Detect already created modules
 
+	// Detect if pipewire is currently active
+	let sinks = await getSinks();
+	if(sinks.length > 0 && sinks[0].module == "PipeWire") {
+		logger.panic("PipeWire not supported.");
+	}
+
 	let apps = await getUserSelectedApplications();
 	let sources = await getUserSelectedSources();
 
@@ -78,9 +84,10 @@ export default async function (options: Options, logger: Logger) {
 				});
 				resolve(sinks);
 			}
-
-			logger.panic(`An error occured while trying to list the sinks`, cmd.status.code);
-			reject();
+			else {
+				logger.panic(`An error occured while trying to list the sinks`, cmd.status.code);
+				reject();
+			}
 		});
 	}
 
