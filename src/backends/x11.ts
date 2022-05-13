@@ -38,7 +38,7 @@ export default async function (options: Options, logger: Logger) {
 	if (typeof options.monitor !== "number") {
 		const monitors = lines.map((line) => getMonitorInfo(line));
 
-		if (monitors.length <= 1) {
+		if (monitors.length < 1) {
 			options.monitor = 0;
 			return;
 		}
