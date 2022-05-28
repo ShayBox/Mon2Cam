@@ -41,6 +41,16 @@ if (!options.wayland) {
 		.catch(() => null);
 }
 
+if (options.sound) {
+	await exec("pipewire --version", { output: 3 })
+		.then((cmd) => {
+			if (cmd.status.success) {
+				logger.warn("PipeWire is not currently supported. You can use catia to do the routing yourself.");
+			}
+		})
+		.catch(() => null);
+}
+
 if (options.sound) await startSound(options, logger);
 if (options.wayland) {
 	logger.info("Wayland detected, to use X11 add -x");
